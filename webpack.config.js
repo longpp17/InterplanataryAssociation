@@ -31,6 +31,10 @@ export default {
     resolve: {
         extensions: ['.js'],
         fallback: {
+            "http": path.resolve("stream-http"),
+            "https": path.resolve("https-browserify"),
+            "os": path.resolve("os-browserify/browser"),
+            "path": path.resolve("path-browserify"),
             "stream": path.resolve(__dirname, 'node_modules/stream-browserify'),
             "buffer": path.resolve(__dirname, 'node_modules/buffer'),
             "createLibp2p": path.resolve(__dirname, 'node_modules/libp2p'),
