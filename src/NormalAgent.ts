@@ -19,26 +19,55 @@
 // 8. broadcast sound
 // 9. merge sound together
 
-import {createLibp2p} from 'libp2p';
-import {bootstrap} from '@libp2p/bootstrap';
+
+// todo: peer routing
+
+import { createLibp2p } from 'libp2p';
+import { bootstrap } from '@libp2p/bootstrap';
+import { noise } from '@chainsafe/libp2p-noise';
+import { yamux } from "@chainsafe/libp2p-yamux";
+import { webSockets } from '@libp2p/websockets';
+import { circuitRelayTransport } from "@libp2p/circuit-relay-v2";
+import { identify } from "@libp2p/identify";
+import { multiaddr } from '@multiformats/multiaddr';
+import { uPnPNAT } from '@libp2p/upnp-nat';
+import { autoNAT } from '@libp2p/autonat';
 
 async function setupLibp2p() {
     const libp2p = await createLibp2p({
+        transports: [
+            webSockets(),
+            circuitRelayTransport({
+                discoverRelays: 2
+            })
+        ],
+        connectionEncryption: [noise()],
+        streamMuxers: [yamux],
+        services: {
+            upnpNAT: uPnPNAT(),
+            identify: identify(),
+            autoNAT: autoNAT()
+        },
+
         peerDiscovery: [
             bootstrap({
                 list: [
                     // a list of bootstrap peer multiaddrs to connect to on node startup
+                    // adding relay node in here
                     '/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
                     '/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
                     '/dnsaddr/bootstrap.libp2p.io/ipfs/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa'
                 ]
             })
-        ]
+        ],
     });
 
     libp2p.addEventListener('peer:discovery', (evt) => {
         console.log('found peer: ', evt.detail.id.toString());
     });
+    libp2p.addEventListener('self:peer:update', (evt) => {
+        console.log(`Advertising with a relay address of ${libp2p.getMultiaddrs()[0].toString()}`)
+    })
 
     return libp2p;
 }
