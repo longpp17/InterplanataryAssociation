@@ -32,11 +32,15 @@ import { identify } from "@libp2p/identify";
 import { multiaddr } from '@multiformats/multiaddr';
 import { uPnPNAT } from '@libp2p/upnp-nat';
 import { autoNAT } from '@libp2p/autonat';
+import { webRTCDirect } from '@libp2p/webrtc-direct';
+import { webRTC } from '@libp2p/webrtc';
+import { tcp} from "@libp2p/tcp";
 
 async function setupLibp2p() {
     const libp2p = await createLibp2p({
         transports: [
-            webSockets(),
+            tcp(),
+            webRTCDirect(),
             circuitRelayTransport({
                 discoverRelays: 2
             })
@@ -54,6 +58,7 @@ async function setupLibp2p() {
                 list: [
                     // a list of bootstrap peer multiaddrs to connect to on node startup
                     // adding relay node in here
+                    '/ip4/127.0.0.1/tcp/54323/p2p/12D3KooWHk7WDTK27Bkx2GzB2mfowQvcuU7pHwRByFK6Eo3u5yxn',
                     '/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
                     '/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
                     '/dnsaddr/bootstrap.libp2p.io/ipfs/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa'
