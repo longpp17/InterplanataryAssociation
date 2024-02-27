@@ -32,7 +32,7 @@ import { identify } from "@libp2p/identify";
 import { multiaddr } from '@multiformats/multiaddr';
 import { uPnPNAT } from '@libp2p/upnp-nat';
 import { autoNAT } from '@libp2p/autonat';
-import { webRTCDirect } from '@libp2p/webrtc-direct';
+
 import { webRTC } from '@libp2p/webrtc';
 import { tcp} from "@libp2p/tcp";
 
@@ -40,7 +40,7 @@ async function setupLibp2p() {
     const libp2p = await createLibp2p({
         transports: [
             tcp(),
-            webRTCDirect(),
+            webRTC(),
             circuitRelayTransport({
                 discoverRelays: 2
             })
