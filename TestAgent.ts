@@ -1,29 +1,23 @@
-// import { createLibp2p } from 'libp2p'
-// import { webSockets } from '@libp2p/websockets'
-// import { noise } from '@chainsafe/libp2p-noise'
-// import { yamux } from '@chainsafe/libp2p-yamux'
-//
-// const node = await createLibp2p({
-//     // libp2p nodes are started by default, pass false to override this
-//     start: false,
-//     addresses: {
-//         listen: ['/ip4/127.0.0.1/tcp/8000/ws']
-//     },
-//     transports: [webSockets()],
-//     connectionEncryption: [noise()],
-//     streamMuxers: [yamux()]
-// })
-//
-// // start libp2p
-// await node.start()
-// console.log('libp2p has started')
-//
-// const listenAddrs = node.getMultiaddrs()
-// console.log('libp2p is listening on the following addresses: ', listenAddrs)
-//
-// // stop libp2p
-// await node.stop()
-// console.log('libp2p has stopped')
+// Creating a libp2p node with:
+//   transport: websockets + tcp
+//   stream-muxing: mplex
+//   crypto-channel: noise
+//   discovery: multicast-dns
+//   dht: kad-dht
+//   pubsub: gossipsub
+
+
+// milestones:
+// stage 1
+// 1. create a libp2p node
+// 2. create a always on relay node on the server
+// 3. create agent on local machines to default use that relay node as bootstrap node
+// 4. connect with other node in other NAT (requires punching holes)
+// 5. sending messages
+// 6. broadcast messages
+// 7. capture local sound
+// 8. broadcast sound
+// 9. merge sound together
 
 import {createLibp2p} from 'libp2p';
 import {bootstrap} from '@libp2p/bootstrap';
@@ -50,6 +44,10 @@ async function setupLibp2p() {
 }
 
 setupLibp2p().then(libp2p => {
-    console.log('Libp2p has been set up');
+    console.log('Libp2p has been set up')
     // Here you can start libp2p or do other operations with it
+    libp2p.getMultiaddrs().forEach(addr => {
+        console.log(`libp2p node is listening on address ${addr.toString()}`);
+        console.log('Peer Id: ', libp2p.peerId.toString());
+    })
 });

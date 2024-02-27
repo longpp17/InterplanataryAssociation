@@ -1,38 +1,34 @@
 // import {createLibp2p} from 'libp2p';
+// import Websockets from 'libp2p-websockets';
+// import WebRTCStar from 'libp2p-webrtc-star';
+// import Mplex from 'libp2p-mplex';
+// import {NOISE} from 'libp2p-noise';
+// import Relay from 'libp2p-circuit';
 //
-//
-// import TCP from '@libp2p/tcp';
-// import {noise} from '@libp2p/noise';
-// import MPLEX from '@libp2p/mplex';
-// import Bootstrap from '@libp2p/bootstrap';
-//
-// async function createNode() {
+// async function createRelayNode() {
 //     const node = await createLibp2p({
-//         addresses: {
-//             listen: ['/ip4/0.0.0.0/tcp/0']
-//         },
 //         modules: {
-//             transport: [TCP],
-//             connEncryption: [noise],
-//             streamMuxer: [MPLEX]
+//             transport: [Websockets, WebRTCStar],
+//             streamMuxer: [Mplex],
+//             connEncryption: [NOISE],
+//             relay: Relay
 //         },
 //         config: {
-//             peerDiscovery: {
-//                 bootstrap: {
+//             relay: {
+//                 enabled: true,
+//                 hop: {
 //                     enabled: true,
-//                     list: [
-//                         '/ip4/.../tcp/.../p2p/Qm...'
-//                     ]
+//                     active: true
 //                 }
 //             }
 //         }
 //     });
 //
 //     await node.start();
-//     console.log(`Node started with peer ID ${node.peerId.toB58String()}`);
+//     console.log(`Node started. Peer ID: ${node.peerId.toB58String()}`);
 //     node.multiaddrs.forEach(addr => {
-//         console.log(`Listening on ${addr.toString()}/p2p/${node.peerId.toB58String()}`)
+//         console.log(`Listening on: ${addr.toString()}/p2p/${node.peerId.toB58String()}`);
 //     });
 // }
 //
-// createNode();
+// createRelayNode();
