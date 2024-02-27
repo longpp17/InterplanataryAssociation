@@ -34,7 +34,16 @@ export default {
             "stream": path.resolve(__dirname, 'node_modules/stream-browserify'),
             "buffer": path.resolve(__dirname, 'node_modules/buffer'),
             "createLibp2p": path.resolve(__dirname, 'node_modules/libp2p'),
-            "bootstrap": path.resolve(__dirname, 'node_modules/@libp2p/bootstrap')
+            "bootstrap": path.resolve(__dirname, 'node_modules/@libp2p/bootstrap'),
+            "noise": path.resolve(__dirname, 'node_modules/@chainsafe/libp2p-noise'),
+            "yamux": path.resolve(__dirname, 'node_modules/@chainsafe/libp2p-yamux'),
+            "circuitRelayServer": path.resolve(__dirname, 'node_modules/@libp2p/circuit-relay-v2'),
+            "identify": path.resolve(__dirname, 'node_modules/@libp2p/identify'),
+            "tcp": path.resolve(__dirname, 'node_modules/@libp2p/tcp'),
+            "uPnPNAT": path.resolve(__dirname, 'node_modules/@libp2p/upnp-nat'),
+            "autoNAT": path.resolve(__dirname, 'node_modules/@libp2p/autonat'),
+            "webRTC": path.resolve(__dirname, 'node_modules/@libp2p/webrtc'),
+
         }
     },
     plugins: [
