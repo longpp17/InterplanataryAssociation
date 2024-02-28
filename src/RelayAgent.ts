@@ -35,8 +35,8 @@ const node = await createLibp2p({
     ],
     services: {
         kadDHT:  kadDHT({
-            protocol: '/ipfs/kad/1.0.0',
-            peerInfoMapper: removePrivateAddressesMapper
+            clientMode: false,
+            kBucketSize: 20,
         }),
         upnpNAT: uPnPNAT(),
         identify: identify(),
