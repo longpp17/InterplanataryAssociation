@@ -29,6 +29,8 @@ import { autoNAT } from '@libp2p/autonat';
 import { webRTC } from '@libp2p/webrtc';
 import { tcp } from "@libp2p/tcp";
 import { kadDHT, removePrivateAddressesMapper } from "@libp2p/kad-dht";
+import { multiaddr } from "@multiformats/multiaddr";
+import { webSockets } from "@libp2p/websockets";
 async function setupLibp2p() {
     const libp2p = await createLibp2p({
         transports: [
@@ -38,6 +40,7 @@ async function setupLibp2p() {
                 socketCloseTimeout: 1000
             }),
             webRTC(),
+            webSockets(),
             circuitRelayTransport({
                 discoverRelays: 2
             })
@@ -58,7 +61,7 @@ async function setupLibp2p() {
                 list: [
                     // a list of bootstrap peer multiaddrs to connect to on node startup
                     // adding relay node in here
-                    '/ip4/136.244.110.156/tcp/43619/p2p/12D3KooWGCzTBuKomoQQaU9Rini3oZ9mjSYJRJKg7YuFmVQ2UGBv',
+                    '/ip4/136.244.110.156/tcp/36869/p2p/12D3KooWLAUxwn4vWGDdtQzsfEZcyz4cDS9HY3Vke1Vsye4ySAN7',
                     // '/ip4/127.0.0.1/tcp/54323/p2p/12D3KooWHk7WDTK27Bkx2GzB2mfowQvcuU7pHwRByFK6Eo3u5yxn',
                     // '/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
                     // '/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
@@ -83,5 +86,8 @@ setupLibp2p().then(libp2p => {
     libp2p.getMultiaddrs().forEach(addr => {
         console.log(`libp2p node is listening on address ${addr.toString()}`);
         console.log('Peer Id: ', libp2p.peerId.toString());
+    });
+    libp2p.dial(multiaddr("/ip4/136.244.110.156/tcp/36869/p2p/12D3KooWLAUxwn4vWGDdtQzsfEZcyz4cDS9HY3Vke1Vsye4ySAN7")).then(r => {
+        console.log('dialing to relay node', r);
     });
 });

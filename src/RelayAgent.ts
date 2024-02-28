@@ -12,14 +12,19 @@ import {webRTCDirect} from "@libp2p/webrtc-direct";
 
 const node = await createLibp2p({
     addresses: {
-        listen: ['/ip4/0.0.0.0/tcp/0']
+        listen: [ '/ip4/0.0.0.0/tcp/0',
+            '/ip4/0.0.0.0/tcp/0/ws',
+            '/ip4/0.0.0.0/tcp/9090/ws',
+            '/ip4/127.0.0.1/tcp/0/ws',
+            '/ip4/127.0.0.1/tcp/0']
         // announce: ['/ip4/136.244.110.156/tcp/43619']
-        // TODO check "What is next?" section
+        // TODO the problem lies in announce, whether using webrtc or find a proper way to announce
         // announce: ['/dns4/auto-relay.libp2p.io/tcp/443/wss/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3']
     },
     transports: [
         webRTC(),
         tcp(),
+        webSockets()
     ],
     connectionEncryption: [
         noise()
