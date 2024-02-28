@@ -37,11 +37,16 @@ import { webRTC } from '@libp2p/webrtc';
 import { webRTCDirect } from "@libp2p/webrtc-direct";
 import { tcp } from "@libp2p/tcp";
 import { kadDHT, removePrivateAddressesMapper} from "@libp2p/kad-dht";
+import { TCPOptions } from '@libp2p/tcp';
 
 async function setupLibp2p() {
     const libp2p = await createLibp2p({
         transports: [
-            tcp(),
+            tcp({
+                inboundSocketInactivityTimeout: 1000,
+                outboundSocketInactivityTimeout: 1000,
+                socketCloseTimeout: 1000
+            }),
             webRTC(),
             circuitRelayTransport({
                 discoverRelays: 2

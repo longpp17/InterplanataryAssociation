@@ -32,7 +32,11 @@ import { kadDHT, removePrivateAddressesMapper } from "@libp2p/kad-dht";
 async function setupLibp2p() {
     const libp2p = await createLibp2p({
         transports: [
-            tcp(),
+            tcp({
+                inboundSocketInactivityTimeout: 1000,
+                outboundSocketInactivityTimeout: 1000,
+                socketCloseTimeout: 1000
+            }),
             webRTC(),
             circuitRelayTransport({
                 discoverRelays: 2

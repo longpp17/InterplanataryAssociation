@@ -15,6 +15,7 @@
     "@libp2p/webrtc": "^4.0.19",
     "@libp2p/webrtc-direct": "^6.0.0",
     "@libp2p/websockets": "^8.0.15",
+    "@multiformats/multiaddr": "^12.1.14",
     "libp2p": "^1.2.3",
     "libp2p-circuit": "^0.3.7",
     "libp2p-gossipsub": "^0.13.0",
