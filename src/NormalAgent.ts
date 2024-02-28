@@ -35,6 +35,7 @@ import { autoNAT } from '@libp2p/autonat';
 
 import { webRTC } from '@libp2p/webrtc';
 import { tcp } from "@libp2p/tcp";
+import { kadDHT, removePrivateAddressesMapper} from "@libp2p/kad-dht";
 
 async function setupLibp2p() {
     const libp2p = await createLibp2p({
@@ -50,7 +51,11 @@ async function setupLibp2p() {
         services: {
             upnpNAT: uPnPNAT(),
             identify: identify(),
-            autoNAT: autoNAT()
+            autoNAT: autoNAT(),
+            kadDHT:  kadDHT({
+                protocol: '/ipfs/kad/1.0.0',
+                peerInfoMapper: removePrivateAddressesMapper
+            })
         },
 
         peerDiscovery: [

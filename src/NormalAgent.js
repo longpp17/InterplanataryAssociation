@@ -28,6 +28,7 @@ import { uPnPNAT } from '@libp2p/upnp-nat';
 import { autoNAT } from '@libp2p/autonat';
 import { webRTC } from '@libp2p/webrtc';
 import { tcp } from "@libp2p/tcp";
+import { kadDHT, removePrivateAddressesMapper } from "@libp2p/kad-dht";
 async function setupLibp2p() {
     const libp2p = await createLibp2p({
         transports: [
@@ -42,7 +43,11 @@ async function setupLibp2p() {
         services: {
             upnpNAT: uPnPNAT(),
             identify: identify(),
-            autoNAT: autoNAT()
+            autoNAT: autoNAT(),
+            kadDHT: kadDHT({
+                protocol: '/ipfs/kad/1.0.0',
+                peerInfoMapper: removePrivateAddressesMapper
+            })
         },
         peerDiscovery: [
             bootstrap({
@@ -68,9 +73,6 @@ async function setupLibp2p() {
 }
 setupLibp2p().then(libp2p => {
     console.log('Libp2p has been set up');
-
-
-
     console.log(`Node started with id ${libp2p.peerId.toString()}`);
     console.log('Listening on:');
     // Here you can start libp2p or do other operations with it
