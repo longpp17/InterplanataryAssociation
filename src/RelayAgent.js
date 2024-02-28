@@ -5,6 +5,7 @@ import { identify } from '@libp2p/identify';
 import { createLibp2p } from 'libp2p';
 import { webRTC } from "@libp2p/webrtc";
 import { tcp } from "@libp2p/tcp";
+import { uPnPNAT } from '@libp2p/upnp-nat';
 import { kadDHT, removePrivateAddressesMapper } from "@libp2p/kad-dht";
 const node = await createLibp2p({
     addresses: {
@@ -28,6 +29,7 @@ const node = await createLibp2p({
             protocol: '/ipfs/kad/1.0.0',
             peerInfoMapper: removePrivateAddressesMapper
         }),
+        upnpNAT: uPnPNAT(),
         identify: identify(),
         relay: circuitRelayServer()
     }
