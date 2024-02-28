@@ -61,7 +61,7 @@ async function setupLibp2p() {
                 list: [
                     // a list of bootstrap peer multiaddrs to connect to on node startup
                     // adding relay node in here
-                    '/ip4/136.244.110.156/tcp/36869/p2p/12D3KooWLAUxwn4vWGDdtQzsfEZcyz4cDS9HY3Vke1Vsye4ySAN7',
+                    '/ip4/192.168.0.3/tcp/61950/ws/p2p/12D3KooWCdFdD5uV7cQzLCwBRQ7hcEXYG8uqsnPLtBmaS3Pxux1R',
                     // '/ip4/127.0.0.1/tcp/54323/p2p/12D3KooWHk7WDTK27Bkx2GzB2mfowQvcuU7pHwRByFK6Eo3u5yxn',
                     // '/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
                     // '/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
@@ -87,7 +87,7 @@ setupLibp2p().then(libp2p => {
         console.log(`libp2p node is listening on address ${addr.toString()}`);
         console.log('Peer Id: ', libp2p.peerId.toString());
     });
-    libp2p.dial(multiaddr("/ip4/136.244.110.156/tcp/36869/p2p/12D3KooWLAUxwn4vWGDdtQzsfEZcyz4cDS9HY3Vke1Vsye4ySAN7")).then(r => {
-        console.log('dialing to relay node', r);
-    });
+    // libp2p.dial(multiaddr("/ip4/136.244.110.156/tcp/36869/p2p/12D3KooWLAUxwn4vWGDdtQzsfEZcyz4cDS9HY3Vke1Vsye4ySAN7")).then(r => {
+    //     console.log('dialing to relay node', r);
+    // });
 });
