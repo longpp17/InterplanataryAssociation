@@ -76,10 +76,16 @@ async function setupLibp2p() {
     })
 
     return libp2p;
+
+
 }
+
+
 
 setupLibp2p().then(libp2p => {
     console.log('Libp2p has been set up')
+    console.log(`Node started with id ${libp2p.peerId.toString()}`)
+    console.log('Listening on:')
     // Here you can start libp2p or do other operations with it
     libp2p.getMultiaddrs().forEach(addr => {
         console.log(`libp2p node is listening on address ${addr.toString()}`);
