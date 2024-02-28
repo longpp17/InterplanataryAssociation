@@ -65,9 +65,8 @@ async function setupLibp2p() {
                 list: [
                     // a list of bootstrap peer multiaddrs to connect to on node startup
                     // adding relay node in here
-                    '/ip4/136.244.110.156/tcp/45501/p2p/12D3KooWNi3g5JZJJ3hch1gEC1nDgrQrHX4mdnEHJpMRBMjvcaDR',
-                    '/ip4/136.244.110.156/tcp/33065/ws/p2p/12D3KooWNi3g5JZJJ3hch1gEC1nDgrQrHX4mdnEHJpMRBMjvcaDR',
-                    '/ip4/136.244.110.156/tcp/9090/ws/p2p/12D3KooWNi3g5JZJJ3hch1gEC1nDgrQrHX4mdnEHJpMRBMjvcaDR'
+                    '/ip4/136.244.110.156/tcp/9090/ws/p2p/12D3KooWRQE8qhdy5vJFf5pCgBCBEWuvV14EytWboAhECXj4HTkm',
+
                     // '/ip4/127.0.0.1/tcp/54323/p2p/12D3KooWHk7WDTK27Bkx2GzB2mfowQvcuU7pHwRByFK6Eo3u5yxn',
                     // '/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
                     // '/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
