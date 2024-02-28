@@ -58,11 +58,11 @@ async function setupLibp2p() {
                 list: [
                     // a list of bootstrap peer multiaddrs to connect to on node startup
                     // adding relay node in here
-                    '/ip4/136.244.110.156/tcp/39611/p2p/12D3KooWRMZL7XG5SLFjNqVgwMjrkJc2yvqAwgBtPjgUng7Makma',
-                    '/ip4/127.0.0.1/tcp/54323/p2p/12D3KooWHk7WDTK27Bkx2GzB2mfowQvcuU7pHwRByFK6Eo3u5yxn',
-                    '/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
-                    '/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
-                    '/dnsaddr/bootstrap.libp2p.io/ipfs/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa'
+                    '/ip4/136.244.110.156/tcp/41923/p2p/12D3KooWGH3s2WzzWpKp1ig2W4b9gLNvGuCruBS92x3gjhcN8wai',
+                    // '/ip4/127.0.0.1/tcp/54323/p2p/12D3KooWHk7WDTK27Bkx2GzB2mfowQvcuU7pHwRByFK6Eo3u5yxn',
+                    // '/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
+                    // '/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
+                    // '/dnsaddr/bootstrap.libp2p.io/ipfs/QmQCU2EcMqAqQPR2i9bChDtGNJchTbq5TbXJJ16u19uLTa'
                 ]
             })
         ],
