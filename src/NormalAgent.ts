@@ -49,7 +49,7 @@ async function setupLibp2p() {
             })
         ],
         connectionEncryption: [noise()],
-        streamMuxers: [yamux],
+        streamMuxers: [yamux()],
         services: {
             upnpNAT: uPnPNAT(),
             identify: identify(),
