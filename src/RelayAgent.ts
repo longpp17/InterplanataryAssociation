@@ -16,7 +16,6 @@ const node = await createLibp2p({
         // announce: ['/dns4/auto-relay.libp2p.io/tcp/443/wss/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3']
     },
     transports: [
-        webRTCDirect(),
         webRTC(),
         tcp(),
     ],
