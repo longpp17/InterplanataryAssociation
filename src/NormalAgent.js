@@ -29,10 +29,14 @@ import { autoNAT } from '@libp2p/autonat';
 import { webRTC } from '@libp2p/webrtc';
 import { tcp } from "@libp2p/tcp";
 import { kadDHT, removePrivateAddressesMapper } from "@libp2p/kad-dht";
-import { multiaddr } from "@multiformats/multiaddr";
 import { webSockets } from "@libp2p/websockets";
 async function setupLibp2p() {
     const libp2p = await createLibp2p({
+        addresses: {
+            listen: [
+                '/ip4/0.0.0.0/tcp/0'
+            ]
+        },
         transports: [
             tcp({
                 inboundSocketInactivityTimeout: 1000,
@@ -61,7 +65,9 @@ async function setupLibp2p() {
                 list: [
                     // a list of bootstrap peer multiaddrs to connect to on node startup
                     // adding relay node in here
-                    '/ip4/192.168.0.3/tcp/61950/ws/p2p/12D3KooWCdFdD5uV7cQzLCwBRQ7hcEXYG8uqsnPLtBmaS3Pxux1R',
+                    '/ip4/136.244.110.156/tcp/45501/p2p/12D3KooWNi3g5JZJJ3hch1gEC1nDgrQrHX4mdnEHJpMRBMjvcaDR',
+                    '/ip4/136.244.110.156/tcp/33065/ws/p2p/12D3KooWNi3g5JZJJ3hch1gEC1nDgrQrHX4mdnEHJpMRBMjvcaDR',
+                    '/ip4/136.244.110.156/tcp/9090/ws/p2p/12D3KooWNi3g5JZJJ3hch1gEC1nDgrQrHX4mdnEHJpMRBMjvcaDR'
                     // '/ip4/127.0.0.1/tcp/54323/p2p/12D3KooWHk7WDTK27Bkx2GzB2mfowQvcuU7pHwRByFK6Eo3u5yxn',
                     // '/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ',
                     // '/dnsaddr/bootstrap.libp2p.io/ipfs/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN',
@@ -89,5 +95,5 @@ setupLibp2p().then(libp2p => {
     });
     // libp2p.dial(multiaddr("/ip4/136.244.110.156/tcp/36869/p2p/12D3KooWLAUxwn4vWGDdtQzsfEZcyz4cDS9HY3Vke1Vsye4ySAN7")).then(r => {
     //     console.log('dialing to relay node', r);
-    // });
+    // })
 });

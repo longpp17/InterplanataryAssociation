@@ -10,6 +10,7 @@ import { uPnPNAT } from '@libp2p/upnp-nat';
 import { kadDHT, removePrivateAddressesMapper} from "@libp2p/kad-dht";
 import {webRTCDirect} from "@libp2p/webrtc-direct";
 
+
 const node = await createLibp2p({
     addresses: {
         listen: [ '/ip4/0.0.0.0/tcp/0',
