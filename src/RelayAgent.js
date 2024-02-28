@@ -9,8 +9,8 @@ import { uPnPNAT } from '@libp2p/upnp-nat';
 import { kadDHT, removePrivateAddressesMapper } from "@libp2p/kad-dht";
 const node = await createLibp2p({
     addresses: {
-        listen: ['/ip4/0.0.0.0/tcp/0'],
-        announce: ['/ip4/136.244.110.156/tcp/43619']
+        listen: ['/ip4/0.0.0.0/tcp/0']
+        // announce: ['/ip4/136.244.110.156/tcp/43619']
         // TODO check "What is next?" section
         // announce: ['/dns4/auto-relay.libp2p.io/tcp/443/wss/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3']
     },
