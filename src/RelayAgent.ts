@@ -31,3 +31,11 @@ const node = await createLibp2p({
 console.log(`Node started with id ${node.peerId.toString()}`)
 console.log('Listening on:')
 node.getMultiaddrs().forEach((ma) => console.log(ma.toString()))
+
+node.addEventListener('peer:discovery', (evt) => {
+    console.log(`Discovered peer: ${evt.detail.id.toString()}`);
+});
+
+node.addEventListener('peer:connect', (evt) => {
+    console.log(`Connected to peer: ${evt.detail.toString()}`);
+});
