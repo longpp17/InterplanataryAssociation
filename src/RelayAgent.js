@@ -19,13 +19,16 @@ const loadOrCreateConfig = async (path) => {
     else {
         console.log('Creating config at', path);
         const peerId = await createEd25519PeerId();
+        const peerIdBuf = exportToProtobuf(peerId);
+        const peerIdBase64 = Buffer.from(peerIdBuf).toString('base64'); // Convert to base64
         const addresses = [
-            // TODO: Address for webRTC & webRTC direct
             '/ip4/0.0.0.0/tcp/9090',
             '/ip4/0.0.0.0/tcp/10000/ws',
+            // Add WebRTC & WebRTC Direct addresses here
         ];
+        console.log('Peer ID:', peerId);
         const config = {
-            peerIdBuf: exportToProtobuf(peerId),
+            peerId: peerIdBase64,
             addresses
         };
         fs.writeFileSync(path, JSON.stringify(config, null, 2));
@@ -34,7 +37,8 @@ const loadOrCreateConfig = async (path) => {
 };
 const config = await loadOrCreateConfig(configPath);
 const createNode = async (config) => {
-    let peerID = await createFromProtobuf(config.peerIdBuf);
+    const peerIDBuf = Buffer.from(config.peerId, 'base64');
+    const peerID = await createFromProtobuf(peerIDBuf);
     return await createLibp2p({
         peerId: peerID,
         addresses: {

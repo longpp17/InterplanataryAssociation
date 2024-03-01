@@ -19,7 +19,7 @@ import {Multiaddr} from "@multiformats/multiaddr";
 
 type Config = {
     // TODO: private key, and key for webRTC
-    peerIdBuf: Uint8Array
+    peerId: String
     addresses: string[]
 }
 
@@ -30,17 +30,20 @@ const loadOrCreateConfig = async (path: string): Promise<Config> => {
     if (fs.existsSync(path)) {
         console.log('Loading config from', path)
         return JSON.parse(fs.readFileSync(path, 'utf-8'))
-    }
-    else{
+    } else {
         console.log('Creating config at', path)
         const peerId = await createEd25519PeerId()
+        const peerIdBuf = exportToProtobuf(peerId);
+        const peerIdBase64 = Buffer.from(peerIdBuf).toString('base64'); // Convert to base64
         const addresses = [
-            // TODO: Address for webRTC & webRTC direct
             '/ip4/0.0.0.0/tcp/9090',
-           '/ip4/0.0.0.0/tcp/10000/ws',
+            '/ip4/0.0.0.0/tcp/10000/ws',
+            // Add WebRTC & WebRTC Direct addresses here
         ]
+
+        console.log('Peer ID:', peerId)
         const config = {
-            peerIdBuf: exportToProtobuf(peerId),
+            peerId: peerIdBase64,
             addresses
         }
 
@@ -49,10 +52,12 @@ const loadOrCreateConfig = async (path: string): Promise<Config> => {
     }
 }
 
+
 const config = await loadOrCreateConfig(configPath)
 
 const createNode : (config: Config) => Promise<Libp2p> = async (config: Config) => {
-    let peerID = await createFromProtobuf(config.peerIdBuf)
+    const peerIDBuf = Buffer.from(config.peerId, 'base64');
+    const peerID = await createFromProtobuf(peerIDBuf);
 
     return await createLibp2p({
         peerId: peerID,
