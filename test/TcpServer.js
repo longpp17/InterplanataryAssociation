@@ -1,5 +1,5 @@
 import net from 'net';
-const PORT = 9400;
+const PORT = 1337;
 const HOST = '0.0.0.0'; // Listen on all network interfaces
 const server = net.createServer((socket) => {
     console.log('Client connected');

@@ -1,6 +1,6 @@
 import * as net from 'net';
 const client = new net.Socket();
-client.connect(9400, '136.244.110.156', () => {
+client.connect(1337, '127.0.0.1', () => {
     console.log('Connected to server');
     client.write('Hello, server! Love, Client.');
 });

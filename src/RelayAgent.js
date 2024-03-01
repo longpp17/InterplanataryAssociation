@@ -8,45 +8,70 @@ import { webRTC } from "@libp2p/webrtc";
 import { tcp } from "@libp2p/tcp";
 import { uPnPNAT } from '@libp2p/upnp-nat';
 import { kadDHT } from "@libp2p/kad-dht";
-const node = await createLibp2p({
-    addresses: {
-        listen: ['/ip4/0.0.0.0/tcp/0',
-            '/ip4/0.0.0.0/tcp/0/ws',
-            '/ip4/0.0.0.0/tcp/9090/ws',
-            '/ip4/127.0.0.1/tcp/0/ws',
-            '/ip4/127.0.0.1/tcp/0',
-        ]
-        // announce: ['/ip4/136.244.110.156/tcp/43619']
-        // TODO the problem lies in announce, whether using webrtc or find a proper way to announce
-        // announce: ['/dns4/auto-relay.libp2p.io/tcp/443/wss/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3']
-    },
-    transports: [
-        webRTC(),
-        tcp(),
-        webSockets()
-    ],
-    connectionEncryption: [
-        noise()
-    ],
-    streamMuxers: [
-        yamux()
-    ],
-    services: {
-        kadDHT: kadDHT({
-            clientMode: false,
-            kBucketSize: 20,
-        }),
-        upnpNAT: uPnPNAT(),
-        identify: identify(),
-        relay: circuitRelayServer()
+import { createEd25519PeerId, createFromProtobuf, exportToProtobuf } from "@libp2p/peer-id-factory";
+import * as fs from 'fs';
+const configPath = './config.json';
+const loadOrCreateConfig = async (path) => {
+    if (fs.existsSync(path)) {
+        console.log('Loading config from', path);
+        return JSON.parse(fs.readFileSync(path, 'utf-8'));
     }
-});
-console.log(`Node started with id ${node.peerId.toString()}`);
-console.log('Listening on:');
-node.getMultiaddrs().forEach((ma) => console.log(ma.toString()));
-node.addEventListener('peer:discovery', (evt) => {
-    console.log(`Discovered peer: ${evt.detail.id.toString()}`);
-});
-node.addEventListener('peer:connect', (evt) => {
-    console.log(`Connected to peer: ${evt.detail.toString()}`);
-});
+    else {
+        console.log('Creating config at', path);
+        const peerId = await createEd25519PeerId();
+        const addresses = [
+            // TODO: Address for webRTC & webRTC direct
+            '/ip4/0.0.0.0/tcp/9090',
+            '/ip4/0.0.0.0/tcp/10000/ws',
+        ];
+        const config = {
+            peerIdBuf: exportToProtobuf(peerId),
+            addresses
+        };
+        fs.writeFileSync(path, JSON.stringify(config, null, 2));
+        return config;
+    }
+};
+const config = await loadOrCreateConfig(configPath);
+const createNode = async (config) => {
+    let peerID = await createFromProtobuf(config.peerIdBuf);
+    return await createLibp2p({
+        peerId: peerID,
+        addresses: {
+            listen: config.addresses
+        },
+        transports: [
+            webRTC(),
+            tcp(),
+            webSockets()
+        ],
+        connectionEncryption: [
+            noise()
+        ],
+        streamMuxers: [
+            yamux()
+        ],
+        services: {
+            kadDHT: kadDHT({
+                clientMode: false,
+                kBucketSize: 20,
+            }),
+            upnpNAT: uPnPNAT(),
+            identify: identify(),
+            relay: circuitRelayServer()
+        }
+    });
+};
+const main = async () => {
+    const node = await createNode(config);
+    console.log(`Node started with id ${node.peerId.toString()}`);
+    console.log('Listening on:');
+    node.getMultiaddrs().forEach((ma) => console.log(ma.toString()));
+    node.addEventListener('peer:discovery', (evt) => {
+        console.log(`Discovered peer: ${evt.detail.id.toString()}`);
+    });
+    node.addEventListener('peer:connect', (evt) => {
+        console.log(`Connected to peer: ${evt.detail.toString()}`);
+    });
+};
+main().catch(console.error);

@@ -10,6 +10,7 @@
     "@libp2p/kad-dht": "^12.0.7",
     "@libp2p/mplex": "^10.0.15",
     "@libp2p/noise": "^12.0.1",
+    "@libp2p/peer-id-factory": "^4.0.7",
     "@libp2p/tcp": "^9.0.15",
     "@libp2p/upnp-nat": "^1.0.13",
     "@libp2p/webrtc": "^4.0.19",
@@ -23,6 +24,9 @@
     "libp2p-noise": "^4.0.0",
     "libp2p-webrtc-star": "^0.25.0",
     "libp2p-websockets": "^0.16.2",
+    "node-datachannel": "^0.5.3",
+    "node-gyp": "^10.0.1",
+    "package.json": "^2.0.1",
     "rxjs": "^7.8.1",
     "websockets": "^0.2.0"
   },
