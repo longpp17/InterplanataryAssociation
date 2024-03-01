@@ -4,11 +4,11 @@ import { circuitRelayServer } from '@libp2p/circuit-relay-v2';
 import { identify } from '@libp2p/identify';
 import { webSockets } from '@libp2p/websockets';
 import { createLibp2p } from 'libp2p';
-import { webRTC } from "@libp2p/webrtc";
 import { tcp } from "@libp2p/tcp";
 import { uPnPNAT } from '@libp2p/upnp-nat';
 import { kadDHT } from "@libp2p/kad-dht";
 import { createEd25519PeerId, createFromProtobuf, exportToProtobuf } from "@libp2p/peer-id-factory";
+import { webRTCDirect } from "@libp2p/webrtc";
 import * as fs from 'fs';
 const configPath = './config.json';
 const loadOrCreateConfig = async (path) => {
@@ -45,7 +45,7 @@ const createNode = async (config) => {
             listen: config.addresses
         },
         transports: [
-            webRTC(),
+            webRTCDirect(),
             tcp(),
             webSockets()
         ],
