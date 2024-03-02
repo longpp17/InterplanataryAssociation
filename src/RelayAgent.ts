@@ -10,6 +10,7 @@ import { uPnPNAT } from '@libp2p/upnp-nat';
 import { kadDHT, removePrivateAddressesMapper} from "@libp2p/kad-dht";
 import {createEd25519PeerId, createFromProtobuf, exportToProtobuf} from "@libp2p/peer-id-factory";
 import {webRTCDirect} from "@libp2p/webrtc";
+import { gossipsub } from "@chainsafe/libp2p-gossipsub";
 
 import * as fs from 'fs'
 import {Libp2pNode} from "libp2p/libp2p";
@@ -81,7 +82,8 @@ const createNode : (config: Config) => Promise<Libp2p> = async (config: Config) 
             }),
             upnpNAT: uPnPNAT(),
             identify: identify(),
-            relay: circuitRelayServer()
+            relay: circuitRelayServer(),
+            pubsub: gossipsub()
         }
     })
 }
