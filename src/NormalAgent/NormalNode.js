@@ -30,10 +30,8 @@ import { webRTC, webRTCDirect } from '@libp2p/webrtc';
 import { tcp } from "@libp2p/tcp";
 import { kadDHT, removePrivateAddressesMapper } from "@libp2p/kad-dht";
 import { webSockets } from "@libp2p/websockets";
-import * as readline from "readline/promises";
-import { stdin as input, stdout as output } from 'process';
 import { gossipsub } from "@chainsafe/libp2p-gossipsub";
-async function setupLibp2p(bootstarps = []) {
+export async function setupLibp2p(bootstarps = []) {
     const libp2p = await createLibp2p({
         addresses: {
             listen: [
@@ -75,11 +73,3 @@ async function setupLibp2p(bootstarps = []) {
     });
     return libp2p;
 }
-const main = async () => {
-    const CLInterface = readline.createInterface({ input, output });
-    const bootstrapLink = await CLInterface.question('Enter the bootstrap link: ');
-    const clientNode = await setupLibp2p([bootstrapLink]);
-    console.log('Libp2p has been set up');
-    console.log(`Node started with id ${clientNode.peerId.toString()}`);
-};
-main().catch(console.error);
