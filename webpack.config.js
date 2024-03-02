@@ -9,7 +9,7 @@ const __dirname = dirname(__filename);
 
 
 export default {
-    entry: './src/NormalAgent.js',
+    entry: './src/NormalNode.js',
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'bundle.js',

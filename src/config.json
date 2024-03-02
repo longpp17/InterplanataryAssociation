@@ -1,0 +1,7 @@
+{
+  "peerId": "CiYAJAgBEiDn+lfgYgqxf9p7zJxGvR+6jSN5azJ0+xmc5DY67gzJ6RIkCAESIOf6V+BiCrF/2nvMnEa9H7qNI3lrMnT7GZzkNjruDMnpGkQIARJANQDo4Z4NHiCzknkq8Tyd/YVkjeeQlu9Q5Szn05hGDnrn+lfgYgqxf9p7zJxGvR+6jSN5azJ0+xmc5DY67gzJ6Q==",
+  "addresses": [
+    "/ip4/0.0.0.0/tcp/9090",
+    "/ip4/0.0.0.0/tcp/10000/ws"
+  ]
+}
