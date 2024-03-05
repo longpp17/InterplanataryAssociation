@@ -1,4 +1,4 @@
-import {setupLibp2p} from './NormalNode';
+import {setupLibp2p} from './NormalNode.js';
 import * as readline from "readline/promises";
 import { stdin as input, stdout as output } from 'process';
 import { gossipsub } from "@chainsafe/libp2p-gossipsub";
@@ -33,6 +33,24 @@ const getAudioStream = async (node: Libp2p<any>, callback: (msg: Message) => voi
     });
 }
 
+let retryOperation: (operation: () => any, maxAttempts?: number, delay?: number) => Promise<any>;
+retryOperation = async (operation: () => any, maxAttempts = 5, delay = 1000) => {
+    try {
+        // Attempt the operation
+        return await operation();
+    } catch (error) {
+        console.error(error);
+        if (maxAttempts <= 1) {
+            throw error; // Rethrow error after max attempts reached
+        }
+        // Wait for a delay before retrying
+        await new Promise(resolve => setTimeout(resolve, delay));
+        // Retry with one less attempt and double the delay
+        return retryOperation(operation, maxAttempts - 1, delay * 2);
+    }
+};
+
+
 const main = async () => {
     const CLInterface = readline.createInterface({input, output})
     const bootstrapLink : string = await CLInterface.question('Enter the bootstrap link: ');
@@ -45,7 +63,15 @@ const main = async () => {
     const startBroadcast = await CLInterface.question('As broadcaster or as listener? (b/l): ');
     if (startBroadcast === 'b') {
         const audioStream = createAudioStream();
-        await broadcastAudioStream(audioStream, clientNode);
+
+        retryOperation(() => {
+            return broadcastAudioStream(audioStream, clientNode);
+        })
+            .then(() => {
+              console.log('Audio stream broadcasted');
+            })
+            .catch(console.error)
+
     }
     else{
         await getAudioStream(clientNode, (msg: Message) => {
