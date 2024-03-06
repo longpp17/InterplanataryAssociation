@@ -8,22 +8,66 @@ import {RPC} from "@chainsafe/libp2p-gossipsub/message";
 import Message = RPC.Message;
 import { Readable } from 'stream';
 
+import { exec } from 'child_process';
+
+function listAudioDevices() {
+    const platform = process.platform;
+
+    if (platform === 'win32') {
+        // Windows command to list audio devices
+        exec('wmic sounddev get name', (error, stdout) => {
+            console.log(stdout);
+        });
+    } else if (platform === 'darwin') {
+        // macOS command to list audio devices
+        exec('system_profiler SPAudioDataType', (error, stdout) => {
+            console.log(stdout);
+        });
+    } else if (platform === 'linux') {
+        // Linux command to list audio devices (ALSA)
+        exec('arecord -l', (error, stdout) => {
+            console.log(stdout);
+        });
+    } else {
+        console.log('Unsupported platform');
+    }
+}
+
+
 function createAudioStream(): Readable {
     // TODO: Allow selecting devices
+    listAudioDevices()
+
     const audioStream: NodeJS.ReadableStream = record.record({
         sampleRate: 16000,
         channels: 2,
+        // device: 'MacBook Pro Microphone'
     }).stream();
+
+
 
     return audioStream as Readable;
 }
 
-const broadcastAudioStream = async (audioStream: any, node: Libp2p<any>) => {
+const broadcastAudioStream = async (audioStream: Readable, node: Libp2p<any>) => {
    const topic = 'audio-stream';
 
-    for await (const data of audioStream) {
-       node.services.pubsub.publish(topic, data);
-   }
+    audioStream
+        .on('data', (chunk) => {
+        try{
+            node.services.pubsub.publish(topic, chunk)
+                 .catch((error: any) => { // Catching the error from the asynchronous operation
+                console.error('Error publishing to topic:', error);
+            });
+        }
+        catch (error) {
+              console.error('Error publishing to topic:', error);
+        }
+        })
+        .on('error', (err) => {
+            console.error('Stream error:', err);
+        });
+
 }
 
 const getAudioStream = async (node: Libp2p<any>, callback: (msg: Message) => void ) => {
@@ -59,9 +103,10 @@ const main = async () => {
 
     console.log('Libp2p has been set up')
     console.log(`Node started with id ${clientNode.peerId.toString()}`)
-
+    // listAudioDevices()
     const startBroadcast = await CLInterface.question('As broadcaster or as listener? (b/l): ');
     if (startBroadcast === 'b') {
+
         const audioStream = createAudioStream();
 
         retryOperation(() => {
