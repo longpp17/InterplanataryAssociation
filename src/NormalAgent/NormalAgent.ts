@@ -95,27 +95,22 @@ retryOperation = async (operation: () => any, maxAttempts = 5, delay = 1000) => 
 const main = async () => {
     const ioServer = createAudioIOServer();
 
-    const CLInterface = readline.createInterface({input, output})
-    const bootstrapLink : string = await CLInterface.question('Enter the bootstrap link: ');
-    const clientNode = await setupLibp2p([bootstrapLink]);
+    ioServer.on("setup-bootstrap",  async (data: string[]) => {
+        console.log("setup-bootstrap", data);
 
-    console.log('Libp2p has been set up')
-    console.log(`Node started with id ${clientNode.peerId.toString()}`)
-    // listAudioDevices()
+        const clientNode = await setupLibp2p(data);
 
-    await retryOperation(async () => {
-        publishToNet(ioServer, clientNode);
-    })
+        await retryOperation(async () => {
+            publishToNet(ioServer, clientNode);
+        })
 
-    await getAudioStream(clientNode, (msg: Message) => {
-       ioServer.emit("audio-buffer", msg.data);
-    });
+        await getAudioStream(clientNode, (msg: Message) => {
+            ioServer.emit("audio-buffer", msg.data);
+        });})
 
-    // Cleanup and exit function
     const cleanupAndExit = () => {
         console.log('Cleaning up before exit...');
         // Perform any necessary cleanup here
-        CLInterface.close(); // Close the readline interface
         process.exit(); // Exit the process
     };
 

@@ -1,7 +1,21 @@
 import { setupLibp2p } from './NormalNode.js';
-import * as readline from "readline/promises";
-import { stdin as input, stdout as output } from 'process';
 import record from 'node-record-lpcm16';
+import { Server } from "socket.io";
+import { createServer } from "http";
+function createAudioIOServer() {
+    const httpServer = createServer();
+    const io = new Server(httpServer, {
+        cors: {
+            origin: "*",
+            methods: ["GET", "POST"]
+        }
+    });
+    httpServer.listen(3000, () => {
+        console.log("listening on http://localhost:3000");
+    });
+    return io;
+}
+// deprecated
 function createAudioStream() {
     // TODO: Allow selecting devices
     const audioStream = record.record({
@@ -11,22 +25,23 @@ function createAudioStream() {
     }).stream();
     return audioStream;
 }
-const broadcastAudioStream = async (audioStream, node) => {
-    const topic = 'audio-stream';
+// deprecated
+const broadcastAudioStream = (audioStream, node) => {
     audioStream
         .on('data', (chunk) => {
-        try {
-            node.services.pubsub.publish(topic, chunk)
-                .catch((error) => {
-                console.error('Error publishing to topic:', error);
-            });
-        }
-        catch (error) {
-            console.error('Error publishing to topic:', error);
-        }
-    })
-        .on('error', (err) => {
-        console.error('Stream error:', err);
+        publishChunk(chunk, node);
+    });
+};
+function publishChunk(chunk, node) {
+    const topic = 'audio-stream';
+    node.services.pubsub.publish(topic, chunk)
+        .catch((error) => {
+        console.error('Error publishing to topic:', error);
+    });
+}
+const publishToNet = (server, node) => {
+    server.on("audio-buffer", (buffer) => {
+        publishChunk(buffer, node);
     });
 };
 const getAudioStream = async (node, callback) => {
@@ -57,27 +72,20 @@ retryOperation = async (operation, maxAttempts = 5, delay = 1000) => {
     }
 };
 const main = async () => {
-    const CLInterface = readline.createInterface({ input, output });
-    const bootstrapLink = await CLInterface.question('Enter the bootstrap link: ');
-    const clientNode = await setupLibp2p([bootstrapLink]);
-    console.log('Libp2p has been set up');
-    console.log(`Node started with id ${clientNode.peerId.toString()}`);
-    const audioStream = createAudioStream();
-    retryOperation(() => {
-        return broadcastAudioStream(audioStream, clientNode);
-    })
-        .then(() => {
-        console.log('Audio stream broadcasted');
-    })
-        .catch(console.error);
-    await getAudioStream(clientNode, (msg) => {
-        console.log(msg);
+    const ioServer = createAudioIOServer();
+    ioServer.on("setup-bootstrap", async (data) => {
+        console.log("setup-bootstrap", data);
+        const clientNode = await setupLibp2p(data);
+        await retryOperation(async () => {
+            publishToNet(ioServer, clientNode);
+        });
+        await getAudioStream(clientNode, (msg) => {
+            ioServer.emit("audio-buffer", msg.data);
+        });
     });
-    // Cleanup and exit function
     const cleanupAndExit = () => {
         console.log('Cleaning up before exit...');
         // Perform any necessary cleanup here
-        CLInterface.close(); // Close the readline interface
         process.exit(); // Exit the process
     };
     // Listen for SIGINT signal (Ctrl+C)
