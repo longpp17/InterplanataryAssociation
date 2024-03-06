@@ -1,7 +1,4 @@
 import {setupLibp2p} from './NormalNode.js';
-import * as readline from "readline/promises";
-import { stdin as input, stdout as output } from 'process';
-import { gossipsub } from "@chainsafe/libp2p-gossipsub";
 import record from 'node-record-lpcm16';
 import {Libp2p} from "libp2p";
 import {RPC} from "@chainsafe/libp2p-gossipsub/message";
@@ -9,7 +6,6 @@ import Message = RPC.Message;
 import { Readable } from 'stream';
 import { Server } from "socket.io";
 import { createServer } from "http";
-import {Libp2pNode} from "libp2p/libp2p";
 
 function createAudioIOServer(): Server {
       const httpServer = createServer();
@@ -26,24 +22,7 @@ function createAudioIOServer(): Server {
         return io;
 }
 
-// deprecated
-function createAudioStream(): Readable {
-    // TODO: Allow selecting devices
-    const audioStream: NodeJS.ReadableStream = record.record({
-        sampleRate: 16000,
-        channels: 2,
-        // device: 'MacBook Pro Microphone'
-    }).stream();
-    return audioStream as Readable;
-}
 
-// deprecated
-const broadcastAudioStream =  (audioStream: Readable, node: Libp2p<any>) => {
-    audioStream
-        .on('data', (chunk) => {
-            publishChunk(chunk, node);
-        })
-}
 
 function publishChunk(chunk: any,  node: Libp2p<any>){
     const topic = 'audio-stream';
@@ -69,7 +48,6 @@ const getAudioStream =  (node: Libp2p<any> | null, callback: (msg: Message) => v
 let retryOperation: (operation: () => any, maxAttempts?: number, delay?: number) => Promise<any>;
 retryOperation = async (operation: () => any, maxAttempts = 5, delay = 1000) => {
     try {
-        // Attempt the operation
         return await operation();
     } catch (error) {
         console.error(error);
@@ -106,23 +84,6 @@ const main = async () => {
         })
 
     })
-
-
-
-
-    // ioServer.on("setup-bootstrap",  async (data: string[]) => {
-    //     console.log("setup-bootstrap", data);
-    //
-    //     const clientNode = await setupLibp2p(data);
-    //
-    //     await retryOperation(async () => {
-    //         publishToNet(ioServer, clientNode);
-    //     })
-    //
-    //     await getAudioStream(clientNode, (msg: Message) => {
-    //         ioServer.emit("audio-buffer", msg.data);
-    //     });
-    // })
 
     const cleanupAndExit = () => {
         console.log('Cleaning up before exit...');

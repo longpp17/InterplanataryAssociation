@@ -1,5 +1,4 @@
 import { setupLibp2p } from './NormalNode.js';
-import record from 'node-record-lpcm16';
 import { Server } from "socket.io";
 import { createServer } from "http";
 function createAudioIOServer() {
@@ -15,23 +14,6 @@ function createAudioIOServer() {
     });
     return io;
 }
-// deprecated
-function createAudioStream() {
-    // TODO: Allow selecting devices
-    const audioStream = record.record({
-        sampleRate: 16000,
-        channels: 2,
-        // device: 'MacBook Pro Microphone'
-    }).stream();
-    return audioStream;
-}
-// deprecated
-const broadcastAudioStream = (audioStream, node) => {
-    audioStream
-        .on('data', (chunk) => {
-        publishChunk(chunk, node);
-    });
-};
 function publishChunk(chunk, node) {
     const topic = 'audio-stream';
     node.services.pubsub.publish(topic, chunk)
@@ -39,27 +21,21 @@ function publishChunk(chunk, node) {
         console.error('Error publishing to topic:', error);
     });
 }
-const publishToNet = (server, node) => {
-    server.on("audio-buffer", (buffer) => {
-        console.log("publishing to net");
-        console.log(buffer);
-        publishChunk(buffer, node);
-    });
-};
-const getAudioStream = async (node, callback) => {
+const getAudioStream = (node, callback) => {
     console.log("subscribe to audio stream");
-    const topic = 'audio-stream';
-    node.services.pubsub.subscribe(topic);
-    node.services.pubsub.addEventListener('message', (message) => {
-        if (topic === message.detail.topic) {
-            callback(message.detail.data);
-        }
-    });
+    if (node != null) {
+        const topic = 'audio-stream';
+        node.services.pubsub.subscribe(topic);
+        node.services.pubsub.addEventListener('message', (message) => {
+            if (topic === message.detail.topic) {
+                callback(message.detail.data);
+            }
+        });
+    }
 };
 let retryOperation;
 retryOperation = async (operation, maxAttempts = 5, delay = 1000) => {
     try {
-        // Attempt the operation
         return await operation();
     }
     catch (error) {
@@ -88,21 +64,10 @@ const main = async () => {
                 publishChunk(buffer, clientNode);
             }
         });
-        socket.emit("audio-buffer", "test");
+        getAudioStream(clientNode, (msg) => {
+            ioServer.emit("audio-buffer", msg.data);
+        });
     });
-    // ioServer.on("setup-bootstrap",  async (data: string[]) => {
-    //     console.log("setup-bootstrap", data);
-    //
-    //     const clientNode = await setupLibp2p(data);
-    //
-    //     await retryOperation(async () => {
-    //         publishToNet(ioServer, clientNode);
-    //     })
-    //
-    //     await getAudioStream(clientNode, (msg: Message) => {
-    //         ioServer.emit("audio-buffer", msg.data);
-    //     });
-    // })
     const cleanupAndExit = () => {
         console.log('Cleaning up before exit...');
         // Perform any necessary cleanup here
