@@ -79,5 +79,14 @@ const main = async () => {
     node.addEventListener('peer:connect', (evt) => {
         console.log(`Connected to peer: ${evt.detail.toString()}`);
     });
+    // @ts-ignore
+    node.services.pubsub.subscribe('audio-stream');
+    // @ts-ignore
+    node.services.pubsub.addEventListener('message', (message) => {
+        console.log('Received message:', message);
+    });
+    // node.services.pubsub.addEventListener('message', (message) => {
+    //
+    // });
 };
 main().catch(console.error);
