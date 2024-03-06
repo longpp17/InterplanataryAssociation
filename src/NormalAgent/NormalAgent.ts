@@ -53,9 +53,6 @@ function publishChunk(chunk: any,  node: Libp2p<any>){
         });
 }
 
-
-
-
 const getAudioStream =  (node: Libp2p<any> | null, callback: (msg: Message) => void ) => {
     console.log("subscribe to audio stream")
     if (node != null) {
