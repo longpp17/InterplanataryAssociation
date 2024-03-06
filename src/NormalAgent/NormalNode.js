@@ -1,21 +1,4 @@
-// Creating a libp2p node with:
-//   transport: websockets + tcp
-//   stream-muxing: mplex
-//   crypto-channel: noise
-//   discovery: multicast-dns
-//   dht: kad-dht
-//   pubsub: gossipsub
-// milestones:
-// stage 1
-// 1. create a libp2p node
-// 2. create a always on relay node on the server
-// 3. create agent on local machines to default use that relay node as bootstrap node
-// 4. connect with other node in other NAT (requires punching holes)
-// 5. sending messages
-// 6. broadcast messages
-// 7. capture local sound
-// 8. broadcast sound
-// 9. merge sound together
+
 // todo: peer routing
 // DO NOT COMMIT PEER LINK INTO GIT!!!
 import { createLibp2p } from 'libp2p';

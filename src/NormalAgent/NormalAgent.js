@@ -1,6 +1,26 @@
 import { setupLibp2p } from './NormalNode.js';
 import { Server } from "socket.io";
 import { createServer } from "http";
+
+// Creating a libp2p node with:
+//   transport: websockets + tcp
+//   stream-muxing: mplex
+//   crypto-channel: noise
+//   discovery: multicast-dns
+//   dht: kad-dht
+//   pubsub: gossipsub
+// milestones:
+// stage 1
+// 1. create a libp2p node DONE
+// 2. create a always on relay node on the server DONE
+// 3. create agent on local machines to default use that relay node as bootstrap node DONE
+// 4. connect with other node in other NAT (requires punching holes) DONE
+// 5. sending messages DONE
+// 6. broadcast messages DONE
+// 7. capture local sound DONE
+// 8. broadcast sound TESTING
+// 9. merge sound together
+
 function createAudioIOServer() {
     const httpServer = createServer();
     const io = new Server(httpServer, {
