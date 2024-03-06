@@ -7,68 +7,60 @@ import {Libp2p} from "libp2p";
 import {RPC} from "@chainsafe/libp2p-gossipsub/message";
 import Message = RPC.Message;
 import { Readable } from 'stream';
+import { Server } from "socket.io";
+import { createServer } from "http";
 
-import { exec } from 'child_process';
+function createAudioIOServer(): Server {
+      const httpServer = createServer();
+        const io = new Server(httpServer, {
+            cors: {
+                origin: "*",
+                methods: ["GET", "POST"]
+            }
+        });
 
-function listAudioDevices() {
-    const platform = process.platform;
-
-    if (platform === 'win32') {
-        // Windows command to list audio devices
-        exec('wmic sounddev get name', (error, stdout) => {
-            console.log(stdout);
+        httpServer.listen(3000, () => {
+            console.log("listening on http://localhost:3000");
         });
-    } else if (platform === 'darwin') {
-        // macOS command to list audio devices
-        exec('system_profiler SPAudioDataType', (error, stdout) => {
-            console.log(stdout);
-        });
-    } else if (platform === 'linux') {
-        // Linux command to list audio devices (ALSA)
-        exec('arecord -l', (error, stdout) => {
-            console.log(stdout);
-        });
-    } else {
-        console.log('Unsupported platform');
-    }
+        return io;
 }
 
-
+// deprecated
 function createAudioStream(): Readable {
     // TODO: Allow selecting devices
-    listAudioDevices()
-
     const audioStream: NodeJS.ReadableStream = record.record({
         sampleRate: 16000,
         channels: 2,
         // device: 'MacBook Pro Microphone'
     }).stream();
-
-
-
     return audioStream as Readable;
 }
 
-const broadcastAudioStream = async (audioStream: Readable, node: Libp2p<any>) => {
-   const topic = 'audio-stream';
-
+// deprecated
+const broadcastAudioStream =  (audioStream: Readable, node: Libp2p<any>) => {
     audioStream
         .on('data', (chunk) => {
-        try{
-            node.services.pubsub.publish(topic, chunk)
-                 .catch((error: any) => { // Catching the error from the asynchronous operation
-                console.error('Error publishing to topic:', error);
-            });
-        }
-        catch (error) {
-              console.error('Error publishing to topic:', error);
-        }
+            publishChunk(chunk, node);
         })
-        .on('error', (err) => {
-            console.error('Stream error:', err);
-        });
-
 }
+
+function publishChunk(chunk: any,  node: Libp2p<any>){
+    const topic = 'audio-stream';
+    node.services.pubsub.publish(topic, chunk)
+        .catch((error: any) => { // Catching the error from the asynchronous operation
+            console.error('Error publishing to topic:', error);
+        });
+}
+
+const publishToNet = (server: Server, node: Libp2p<any>) => {
+    server.on("audio-buffer", (buffer: any) => {
+        publishChunk(buffer, node);
+    })
+}
+
+
+
+
 
 const getAudioStream = async (node: Libp2p<any>, callback: (msg: Message) => void ) => {
     console.log("subscribe to audio stream")
@@ -79,9 +71,6 @@ const getAudioStream = async (node: Libp2p<any>, callback: (msg: Message) => voi
             callback(message.detail.data);
         }
     })
-    // node.services.pubsub.subscribe(topic, (msg: Message) => {
-    //    callback(msg);
-    // });
 }
 
 let retryOperation: (operation: () => any, maxAttempts?: number, delay?: number) => Promise<any>;
@@ -102,35 +91,25 @@ retryOperation = async (operation: () => any, maxAttempts = 5, delay = 1000) => 
 };
 
 
+
 const main = async () => {
+    const ioServer = createAudioIOServer();
+
     const CLInterface = readline.createInterface({input, output})
     const bootstrapLink : string = await CLInterface.question('Enter the bootstrap link: ');
-
     const clientNode = await setupLibp2p([bootstrapLink]);
 
     console.log('Libp2p has been set up')
     console.log(`Node started with id ${clientNode.peerId.toString()}`)
     // listAudioDevices()
-    const startBroadcast = await CLInterface.question('As broadcaster or as listener? (b/l): ');
-    if (startBroadcast === 'b') {
 
-        const audioStream = createAudioStream();
+    await retryOperation(async () => {
+        publishToNet(ioServer, clientNode);
+    })
 
-        retryOperation(() => {
-            return broadcastAudioStream(audioStream, clientNode);
-        })
-            .then(() => {
-              console.log('Audio stream broadcasted');
-            })
-            .catch(console.error)
-
-    }
-    else{
-
-        await getAudioStream(clientNode, (msg: Message) => {
-            console.log(msg);
-        });
-    }
+    await getAudioStream(clientNode, (msg: Message) => {
+       ioServer.emit("audio-buffer", msg.data);
+    });
 
     // Cleanup and exit function
     const cleanupAndExit = () => {

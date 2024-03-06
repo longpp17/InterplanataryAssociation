@@ -2,34 +2,8 @@ import { setupLibp2p } from './NormalNode.js';
 import * as readline from "readline/promises";
 import { stdin as input, stdout as output } from 'process';
 import record from 'node-record-lpcm16';
-import { exec } from 'child_process';
-function listAudioDevices() {
-    const platform = process.platform;
-    if (platform === 'win32') {
-        // Windows command to list audio devices
-        exec('wmic sounddev get name', (error, stdout) => {
-            console.log(stdout);
-        });
-    }
-    else if (platform === 'darwin') {
-        // macOS command to list audio devices
-        exec('system_profiler SPAudioDataType', (error, stdout) => {
-            console.log(stdout);
-        });
-    }
-    else if (platform === 'linux') {
-        // Linux command to list audio devices (ALSA)
-        exec('arecord -l', (error, stdout) => {
-            console.log(stdout);
-        });
-    }
-    else {
-        console.log('Unsupported platform');
-    }
-}
 function createAudioStream() {
     // TODO: Allow selecting devices
-    listAudioDevices();
     const audioStream = record.record({
         sampleRate: 16000,
         channels: 2,
@@ -64,9 +38,6 @@ const getAudioStream = async (node, callback) => {
             callback(message.detail.data);
         }
     });
-    // node.services.pubsub.subscribe(topic, (msg: Message) => {
-    //    callback(msg);
-    // });
 };
 let retryOperation;
 retryOperation = async (operation, maxAttempts = 5, delay = 1000) => {
@@ -91,23 +62,17 @@ const main = async () => {
     const clientNode = await setupLibp2p([bootstrapLink]);
     console.log('Libp2p has been set up');
     console.log(`Node started with id ${clientNode.peerId.toString()}`);
-    // listAudioDevices()
-    const startBroadcast = await CLInterface.question('As broadcaster or as listener? (b/l): ');
-    if (startBroadcast === 'b') {
-        const audioStream = createAudioStream();
-        retryOperation(() => {
-            return broadcastAudioStream(audioStream, clientNode);
-        })
-            .then(() => {
-            console.log('Audio stream broadcasted');
-        })
-            .catch(console.error);
-    }
-    else {
-        await getAudioStream(clientNode, (msg) => {
-            console.log(msg);
-        });
-    }
+    const audioStream = createAudioStream();
+    retryOperation(() => {
+        return broadcastAudioStream(audioStream, clientNode);
+    })
+        .then(() => {
+        console.log('Audio stream broadcasted');
+    })
+        .catch(console.error);
+    await getAudioStream(clientNode, (msg) => {
+        console.log(msg);
+    });
     // Cleanup and exit function
     const cleanupAndExit = () => {
         console.log('Cleaning up before exit...');

@@ -18,6 +18,7 @@
     "@libp2p/webrtc-direct": "^6.0.0",
     "@libp2p/websockets": "^8.0.15",
     "@multiformats/multiaddr": "^12.1.14",
+    "audio-play": "^2.3.1",
     "libp2p": "^1.2.3",
     "libp2p-circuit": "^0.3.7",
     "libp2p-gossipsub": "^0.13.0",
@@ -31,6 +32,7 @@
     "node-record-lpcm16": "^1.0.1",
     "package.json": "^2.0.1",
     "rxjs": "^7.8.1",
+    "socket.io": "^4.7.4",
     "websockets": "^0.2.0"
   },
   "devDependencies": {
