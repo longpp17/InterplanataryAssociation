@@ -1,9 +1,7 @@
 import {setupLibp2p} from './NormalNode.js';
-import record from 'node-record-lpcm16';
 import {Libp2p} from "libp2p";
 import {RPC} from "@chainsafe/libp2p-gossipsub/message";
 import Message = RPC.Message;
-import { Readable } from 'stream';
 import { Server } from "socket.io";
 import { createServer } from "http";
 // Creating a libp2p node with:
