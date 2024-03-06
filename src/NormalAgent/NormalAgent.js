@@ -41,6 +41,8 @@ function publishChunk(chunk, node) {
 }
 const publishToNet = (server, node) => {
     server.on("audio-buffer", (buffer) => {
+        console.log("publishing to net");
+        console.log(buffer);
         publishChunk(buffer, node);
     });
 };
@@ -73,16 +75,34 @@ retryOperation = async (operation, maxAttempts = 5, delay = 1000) => {
 };
 const main = async () => {
     const ioServer = createAudioIOServer();
-    ioServer.on("setup-bootstrap", async (data) => {
-        console.log("setup-bootstrap", data);
-        const clientNode = await setupLibp2p(data);
-        await retryOperation(async () => {
-            publishToNet(ioServer, clientNode);
+    var clientNode = null;
+    ioServer.on("connection", (socket) => {
+        console.log("connected");
+        socket.on("setup-bootstrap", async (data) => {
+            console.log("setup-bootstrap", data);
+            clientNode = await setupLibp2p(data);
         });
-        await getAudioStream(clientNode, (msg) => {
-            ioServer.emit("audio-buffer", msg.data);
+        socket.on("audio-buffer", async (buffer) => {
+            console.log("audio-buffer", buffer);
+            if (clientNode != null) {
+                publishChunk(buffer, clientNode);
+            }
         });
+        socket.emit("audio-buffer", "test");
     });
+    // ioServer.on("setup-bootstrap",  async (data: string[]) => {
+    //     console.log("setup-bootstrap", data);
+    //
+    //     const clientNode = await setupLibp2p(data);
+    //
+    //     await retryOperation(async () => {
+    //         publishToNet(ioServer, clientNode);
+    //     })
+    //
+    //     await getAudioStream(clientNode, (msg: Message) => {
+    //         ioServer.emit("audio-buffer", msg.data);
+    //     });
+    // })
     const cleanupAndExit = () => {
         console.log('Cleaning up before exit...');
         // Perform any necessary cleanup here
