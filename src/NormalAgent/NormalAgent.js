@@ -77,6 +77,10 @@ const main = async () => {
         socket.on("setup-bootstrap", async (data) => {
             console.log("setup-bootstrap", data);
             clientNode = await setupLibp2p(data);
+            // temp fix, not sure whether it can work
+            getAudioStream(clientNode, (msg) => {
+                ioServer.emit("audio-buffer", msg.data);
+            });
         });
         socket.on("audio-buffer", async (buffer) => {
             console.log("audio-buffer", buffer);
@@ -84,12 +88,10 @@ const main = async () => {
                 publishChunk(buffer, clientNode);
             }
         });
-        getAudioStream(clientNode, (msg) => {
-            ioServer.emit("audio-buffer", msg.data);
-        });
+
     });
     const cleanupAndExit = () => {
-        console.log('Cleaning up before exit...');
+        console.log'Cleaning up before exit...');
         // Perform any necessary cleanup here
         process.exit(); // Exit the process
     };

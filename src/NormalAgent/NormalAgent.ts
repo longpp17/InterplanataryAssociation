@@ -37,8 +37,6 @@ function createAudioIOServer(): Server {
         return io;
 }
 
-
-
 function publishChunk(chunk: any,  node: Libp2p<any>){
     const topic = 'audio-stream';
     node.services.pubsub.publish(topic, chunk)
@@ -58,6 +56,9 @@ const getAudioStream =  (node: Libp2p<any> | null, callback: (msg: Message) => v
             }
         })
     }
+    else{
+        console.log("failed to subscribe to audio stream, client node is null")
+    }
 }
 
 let retryOperation: (operation: () => any, maxAttempts?: number, delay?: number) => Promise<any>;
@@ -76,8 +77,6 @@ retryOperation = async (operation: () => any, maxAttempts = 5, delay = 1000) => 
     }
 };
 
-
-
 const main = async () => {
     const ioServer = createAudioIOServer();
     var clientNode : Libp2p | null = null;
@@ -87,16 +86,21 @@ const main = async () => {
         socket.on("setup-bootstrap", async (data: string[]) => {
             console.log("setup-bootstrap", data);
             clientNode = await setupLibp2p(data);
+            // temp fix, not sure this can work.
+            getAudioStream(clientNode, (msg: any) => {
+                ioServer.emit("audio-buffer", msg);
+            });
         })
         socket.on("audio-buffer", async (buffer: any) => {
             console.log("audio-buffer", buffer)
             if (clientNode != null) {
                 publishChunk(buffer, clientNode);
             }
+            else{
+                console.log("failed to publish chunk, client node is null")
+            }
         })
-        getAudioStream(clientNode, (msg: Message) => {
-            ioServer.emit("audio-buffer", msg.data);
-        })
+
 
     })
 
