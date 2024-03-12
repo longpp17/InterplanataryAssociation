@@ -1,4 +1,3 @@
-
 // todo: peer routing
 // DO NOT COMMIT PEER LINK INTO GIT!!!
 import { createLibp2p } from 'libp2p';

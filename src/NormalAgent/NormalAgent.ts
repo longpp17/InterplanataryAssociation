@@ -4,6 +4,12 @@ import {RPC} from "@chainsafe/libp2p-gossipsub/message";
 import Message = RPC.Message;
 import { Server } from "socket.io";
 import { createServer } from "http";
+import {PeerId} from "@libp2p/interface" ;
+import PeerInfo = RPC.PeerInfo;
+import {Multiaddr} from "@multiformats/multiaddr";
+import {Uint8ArrayList} from "uint8arraylist";
+import {pipe} from "it-pipe";
+import { pushable } from 'it-pushable';
 // Creating a libp2p node with:
 //   transport: websockets + tcp
 //   stream-muxing: mplex
@@ -22,6 +28,10 @@ import { createServer } from "http";
 // 7. capture local sound DONE
 // 8. broadcast sound TESTING
 // 9. merge sound together
+
+const DIAL_PROTOCOL = '/audio-stream/1.0.0';
+
+
 function createAudioIOServer(): Server {
       const httpServer = createServer();
         const io = new Server(httpServer, {
@@ -37,29 +47,86 @@ function createAudioIOServer(): Server {
         return io;
 }
 
-function publishChunk(chunk: any,  node: Libp2p<any>){
-    const topic = 'audio-stream';
-    node.services.pubsub.publish(topic, chunk)
+function publishToGossip(topic: String, data: any, node: Libp2p<any>){
+    node.services.pubsub.publish(topic, data)
         .catch((error: any) => { // Catching the error from the asynchronous operation
             console.error('Error publishing to topic:', error);
         });
 }
 
-const getAudioStream =  (node: Libp2p<any> | null, callback: (msg: Message) => void ) => {
+// async function sendDataToMultiplePeers(peers: Multiaddr[], data: any, node: Libp2p<any>){
+//     try{
+//         const {stream} = await node.dialProtocol(peers[0], '/audio-stream');
+//         await stream.write(data);
+//     } catch (error){
+//         console.log("failed to send data to multiple peers", error)
+//     }
+// }
+
+function subscribeToGossipSub(topic: String, node: Libp2p<any>, callback: (msg: Message) => void){
+    node.services.pubsub.subscribe(topic);
+    node.services.pubsub.addEventListener('message', (message: any) => {
+        if (topic === message.detail.topic) {
+            callback(message.detail.data);
+        }
+    })
+}
+
+async function subscribeToStream(node: Libp2p<any>, callback: (msg: Uint8ArrayList) => void){
+    await node.handle(DIAL_PROTOCOL, async ({stream}) => {
+        await pipe(
+            stream,
+            async (source: any) => {
+                for await (const chunk of source) {
+                    // Emit the audio chunk to all connected Socket.IO clients
+                    callback(chunk)
+                }
+            }
+        );
+    });
+}
+
+
+// Function to initialize a streaming connection to a specific peer
+// and return a pushable stream that you can use to send audio data continuously
+async function initAudioStreamToPeer(peerId: PeerId, node: Libp2p<any>) {
+    // Dial the peer using the audio stream protocol
+    const  stream  = await node.dialProtocol(peerId, DIAL_PROTOCOL);
+
+    // Create a pushable stream where you can push audio data chunks
+    const audioDataStream = pushable();
+
+    // Use the pipe utility to send audio data through the stream
+    pipe(
+        audioDataStream,
+        // The stream is already in the correct format, so we can directly pipe it
+        stream
+    ).catch(err => {
+        console.error('Stream error:', err);
+        audioDataStream.end(err);
+    });
+
+    // Return the pushable stream so you can push audio data to it later
+    return audioDataStream;
+}
+
+
+
+function publishChunkToGossip(chunk: any,  node: Libp2p<any>){
+    publishToGossip('audio-stream', chunk, node);
+}
+
+const getAudioStreamFromGossip =  (node: Libp2p<any> | null, callback: (msg: Message) => void ) => {
     console.log("subscribe to audio stream")
     if (node != null) {
-        const topic = 'audio-stream';
-        node.services.pubsub.subscribe(topic);
-        node.services.pubsub.addEventListener('message', (message: any) => {
-            if (topic === message.detail.topic) {
-                callback(message.detail.data);
-            }
-        })
+       subscribeToGossipSub('audio-stream', node, callback);
     }
     else{
         console.log("failed to subscribe to audio stream, client node is null")
     }
 }
+
+
 
 let retryOperation: (operation: () => any, maxAttempts?: number, delay?: number) => Promise<any>;
 retryOperation = async (operation: () => any, maxAttempts = 5, delay = 1000) => {
@@ -86,15 +153,16 @@ const main = async () => {
         socket.on("setup-bootstrap", async (data: string[]) => {
             console.log("setup-bootstrap", data);
             clientNode = await setupLibp2p(data);
-            // temp fix, not sure this can work.
-            getAudioStream(clientNode, (msg: any) => {
+            // temp fix, not sure if this can work.
+            getAudioStreamFromGossip(clientNode, (msg: any) => {
                 ioServer.emit("audio-buffer", msg);
             });
+
         })
         socket.on("audio-buffer", async (buffer: any) => {
             console.log("audio-buffer", buffer)
             if (clientNode != null) {
-                publishChunk(buffer, clientNode);
+                publishChunkToGossip(buffer, clientNode);
             }
             else{
                 console.log("failed to publish chunk, client node is null")
