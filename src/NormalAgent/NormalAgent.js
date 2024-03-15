@@ -150,7 +150,7 @@ const main = async () => {
                     return peerInfo;
                 });
                 console.log("get-peers", peers);
-                socket.emit("peers", JSON.stringify(peers));
+                socket.emit("get-peers", JSON.stringify(peers));
             }
             else {
                 console.log("failed to get peers, client node is null");
