@@ -167,6 +167,7 @@ const main = async () => {
             clientNode = await setupLibp2p(data);
 
             await subscribeToStream(clientNode, (msg: any) => {
+                console.log("recv-audio-buffer", msg)
                 ioServer.emit("audio-buffer", msg);
             })
 

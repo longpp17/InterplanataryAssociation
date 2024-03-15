@@ -122,6 +122,7 @@ const main = async () => {
             console.log("setup-bootstrap", data);
             clientNode = await setupLibp2p(data);
             await subscribeToStream(clientNode, (msg) => {
+                console.log("recv-audio-buffer", msg);
                 ioServer.emit("audio-buffer", msg);
             });
         });
