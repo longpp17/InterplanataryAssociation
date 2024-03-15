@@ -58,7 +58,7 @@ function subscribeToGossipSub(topic, node, callback) {
 }
 async function subscribeToStream(node, callback) {
     await node.handle(DIAL_PROTOCOL, async ({ stream }) => {
-        await pipe(stream, async (source) => {
+        await pipe(stream.source, async (source) => {
             for await (const chunk of source) {
                 // Emit the audio chunk to all connected Socket.IO clients
                 callback(chunk);
@@ -70,13 +70,13 @@ async function subscribeToStream(node, callback) {
 // and return a pushable stream that you can use to send audio data continuously
 async function initAudioStreamToPeer(peerId, node) {
     // Dial the peer using the audio stream protocol
-    const stream = await node.dialProtocol(peerId, DIAL_PROTOCOL);
+    const stream = await node.dialProtocol(peerId, DIAL_PROTOCOL, { runOnTransientConnection: true });
     // Create a pushable stream where you can push audio data chunks
     const audioDataStream = pushable();
     // Use the pipe utility to send audio data through the stream
     pipe(audioDataStream, 
     // The stream is already in the correct format, so we can directly pipe it
-    stream).catch(err => {
+    stream.sink).catch(err => {
         console.error('Stream error:', err);
         audioDataStream.end(err);
     });
@@ -149,7 +149,7 @@ const main = async () => {
                     return peerInfo;
                 });
                 console.log("get-peers", peers);
-                socket.emit("get-peers", JSON.stringify(peers));
+                socket.emit("peers", JSON.stringify(peers));
             }
             else {
                 console.log("failed to get peers, client node is null");

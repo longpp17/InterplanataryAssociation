@@ -5,12 +5,15 @@ import {RPC} from "@chainsafe/libp2p-gossipsub/message";
 import Message = RPC.Message;
 import { Server } from "socket.io";
 import { createServer } from "http";
-import {PeerId} from "@libp2p/interface" ;
+import {PeerId, NewStreamOptions} from "@libp2p/interface" ;
 import PeerInfo = RPC.PeerInfo;
 import {Multiaddr} from "@multiformats/multiaddr";
 import {Uint8ArrayList} from "uint8arraylist";
 import {pipe} from "it-pipe";
 import { pushable, Pushable } from 'it-pushable';
+// @ts-ignore
+import pull from "pull-stream";
+
 import {map} from "rxjs";
 import {handleIncomingStream} from "@libp2p/webrtc/dist/src/private-to-private/signaling-stream-handler";
 
@@ -80,7 +83,7 @@ function subscribeToGossipSub(topic: String, node: Libp2p<any>, callback: (msg: 
 async function subscribeToStream(node: Libp2p<any>, callback: (msg: Uint8ArrayList) => void){
     await node.handle(DIAL_PROTOCOL, async ({stream}) => {
         await pipe(
-            stream,
+            stream.source,
             async (source: any) => {
                 for await (const chunk of source) {
                     // Emit the audio chunk to all connected Socket.IO clients
@@ -96,7 +99,7 @@ async function subscribeToStream(node: Libp2p<any>, callback: (msg: Uint8ArrayLi
 // and return a pushable stream that you can use to send audio data continuously
 async function initAudioStreamToPeer(peerId: PeerId, node: Libp2p<any>) {
     // Dial the peer using the audio stream protocol
-    const  stream  = await node.dialProtocol(peerId, DIAL_PROTOCOL);
+    const  stream  = await node.dialProtocol(peerId, DIAL_PROTOCOL, {runOnTransientConnection: true});
 
     // Create a pushable stream where you can push audio data chunks
     const audioDataStream = pushable();
@@ -105,7 +108,7 @@ async function initAudioStreamToPeer(peerId: PeerId, node: Libp2p<any>) {
     pipe(
         audioDataStream,
         // The stream is already in the correct format, so we can directly pipe it
-        stream
+        stream.sink
     ).catch(err => {
         console.error('Stream error:', err);
         audioDataStream.end(err);
