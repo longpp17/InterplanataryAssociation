@@ -140,9 +140,16 @@ const main = async () => {
         });
         socket.on("get-peers", async () => {
             if (clientNode != null) {
-                const peers = clientNode.getPeers().map((peer) => );
+                const peers = clientNode.getConnections()
+                    .map((connection) => {
+                    const peerInfo = {
+                        peerID: connection.remotePeer.toString(),
+                        address: connection.remoteAddr.toString()
+                    };
+                    return peerInfo;
+                });
                 console.log("get-peers", peers);
-                socket.emit("peers", peers);
+                socket.emit("get-peers", JSON.stringify(peers));
             }
             else {
                 console.log("failed to get peers, client node is null");
