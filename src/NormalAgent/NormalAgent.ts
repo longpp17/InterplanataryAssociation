@@ -9,7 +9,10 @@ import PeerInfo = RPC.PeerInfo;
 import {Multiaddr} from "@multiformats/multiaddr";
 import {Uint8ArrayList} from "uint8arraylist";
 import {pipe} from "it-pipe";
-import { pushable } from 'it-pushable';
+import { pushable, Pushable } from 'it-pushable';
+import {map} from "rxjs";
+import {handleIncomingStream} from "@libp2p/webrtc/dist/src/private-to-private/signaling-stream-handler";
+
 // Creating a libp2p node with:
 //   transport: websockets + tcp
 //   stream-muxing: mplex
@@ -29,7 +32,7 @@ import { pushable } from 'it-pushable';
 // 8. broadcast sound TESTING
 // 9. merge sound together
 
-const DIAL_PROTOCOL = '/audio-stream/1.0.0';
+
 
 
 function createAudioIOServer(): Server {
@@ -112,6 +115,8 @@ async function initAudioStreamToPeer(peerId: PeerId, node: Libp2p<any>) {
 
 
 
+
+
 function publishChunkToGossip(chunk: any,  node: Libp2p<any>){
     publishToGossip('audio-stream', chunk, node);
 }
@@ -144,6 +149,8 @@ retryOperation = async (operation: () => any, maxAttempts = 5, delay = 1000) => 
     }
 };
 
+const DIAL_PROTOCOL = '/audio-stream/1.0.0';
+const PUSHABLE_AUDIO_STREAMS : Pushable<Uint8Array>[] = [];
 const main = async () => {
     const ioServer = createAudioIOServer();
     var clientNode : Libp2p | null = null;
@@ -153,19 +160,59 @@ const main = async () => {
         socket.on("setup-bootstrap", async (data: string[]) => {
             console.log("setup-bootstrap", data);
             clientNode = await setupLibp2p(data);
-            // temp fix, not sure if this can work.
-            getAudioStreamFromGossip(clientNode, (msg: any) => {
-                ioServer.emit("audio-buffer", msg);
-            });
 
+            await subscribeToStream(clientNode, (msg: any) => {
+                ioServer.emit("audio-buffer", msg);
+            })
+
+            // temp fix, not sure if this can work.
+            // getAudioStreamFromGossip(clientNode, (msg: any) => {
+            //     ioServer.emit("audio-buffer", msg);
+            // });
+            //
         })
         socket.on("audio-buffer", async (buffer: any) => {
             console.log("audio-buffer", buffer)
+
+            PUSHABLE_AUDIO_STREAMS.forEach((pushable) => {
+                pushable.push(buffer);
+            })
+
+            // publish to gossipsub
+            // if (clientNode != null) {
+            //     publishChunkToGossip(buffer, clientNode);
+            // }
+            // else{
+            //     console.log("failed to publish chunk, client node is null")
+            // }
+        })
+
+        socket.on("get-peers", async () => {
             if (clientNode != null) {
-                publishChunkToGossip(buffer, clientNode);
+                const peers = clientNode.getPeers();
+                console.log("get-peers", peers);
+                socket.emit("peers", peers);
             }
             else{
-                console.log("failed to publish chunk, client node is null")
+                console.log("failed to get peers, client node is null")
+            }
+        })
+
+        socket.on("stream-to-peer", async (peerId: string) => {
+            if (clientNode != null) {
+                // setup peer to stream
+                const peersToConnect =  clientNode.getPeers().filter((peer) => peer.toString() === peerId)
+                for (let peer in peersToConnect){
+                    const pushable = await initAudioStreamToPeer(peersToConnect[peer], clientNode);
+                    PUSHABLE_AUDIO_STREAMS.push(pushable);
+                }
+
+                // const audioStream = await initAudioStreamToPeer(peer, clientNode);
+                // console.log("stream-to-peer", peerId);
+                // socket.emit("audio-stream", audioStream);
+            }
+            else{
+                console.log("failed to stream to peer, client node is null")
             }
         })
 
