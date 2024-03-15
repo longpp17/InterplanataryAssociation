@@ -1,4 +1,5 @@
 import {setupLibp2p} from './NormalNode.js';
+import {SocketPeerInfo} from "./SocketIOInterface.js";
 import {Libp2p} from "libp2p";
 import {RPC} from "@chainsafe/libp2p-gossipsub/message";
 import Message = RPC.Message;
@@ -12,6 +13,7 @@ import {pipe} from "it-pipe";
 import { pushable, Pushable } from 'it-pushable';
 import {map} from "rxjs";
 import {handleIncomingStream} from "@libp2p/webrtc/dist/src/private-to-private/signaling-stream-handler";
+
 
 // Creating a libp2p node with:
 //   transport: websockets + tcp
@@ -165,11 +167,6 @@ const main = async () => {
                 ioServer.emit("audio-buffer", msg);
             })
 
-            // temp fix, not sure if this can work.
-            // getAudioStreamFromGossip(clientNode, (msg: any) => {
-            //     ioServer.emit("audio-buffer", msg);
-            // });
-            //
         })
         socket.on("audio-buffer", async (buffer: any) => {
             console.log("audio-buffer", buffer)
@@ -189,9 +186,18 @@ const main = async () => {
 
         socket.on("get-peers", async () => {
             if (clientNode != null) {
-                const peers = clientNode.getPeers();
+                const peers  = clientNode.getConnections()
+                    .map((connection) => {
+                        const peerInfo: SocketPeerInfo = {
+                            peerID: connection.remotePeer.toString(),
+                            address: connection.remoteAddr.toString()
+                        };
+                        return peerInfo
+                    })
+
+
                 console.log("get-peers", peers);
-                socket.emit("peers", peers);
+                socket.emit("peers", JSON.stringify(peers));
             }
             else{
                 console.log("failed to get peers, client node is null")
