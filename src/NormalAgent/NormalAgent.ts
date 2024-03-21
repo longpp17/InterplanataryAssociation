@@ -11,6 +11,7 @@ import {Multiaddr} from "@multiformats/multiaddr";
 import {Uint8ArrayList} from "uint8arraylist";
 import {pipe} from "it-pipe";
 import { pushable, Pushable } from 'it-pushable';
+import { Buffer } from 'buffer';
 // @ts-ignore
 import pull from "pull-stream";
 
@@ -100,13 +101,14 @@ async function subscribeToStream(node: Libp2p<any>, callback: (msg: Uint8ArrayLi
 async function initAudioStreamToPeer(peerId: PeerId, node: Libp2p<any>) {
     // Dial the peer using the audio stream protocol
     const  stream  = await node.dialProtocol(peerId, DIAL_PROTOCOL, {runOnTransientConnection: true});
-
+    console.log("dialed peer", peerId.toString())
     // Create a pushable stream where you can push audio data chunks
     const audioDataStream = pushable();
 
     // Use the pipe utility to send audio data through the stream
     pipe(
         audioDataStream,
+        consumeSource,
         // The stream is already in the correct format, so we can directly pipe it
         stream.sink
     ).catch(err => {
@@ -114,11 +116,20 @@ async function initAudioStreamToPeer(peerId: PeerId, node: Libp2p<any>) {
         audioDataStream.end(err);
     });
 
+    audioDataStream.onEmpty().then(() => {
+        console.log('Audio stream ended');
+    })
+
+
     // Return the pushable stream so you can push audio data to it later
     return audioDataStream;
 }
 
-
+async function* consumeSource(source: any ) {
+    for await (const chunk of source) {
+        yield chunk;
+    }
+}
 
 
 
@@ -172,7 +183,7 @@ const main = async () => {
             })
 
         })
-        socket.on("audio-buffer", async (buffer: any) => {
+        socket.on("audio-buffer", async (buffer: Buffer) => {
             console.log("audio-buffer", buffer)
 
             PUSHABLE_AUDIO_STREAMS.forEach((pushable) => {

@@ -82,7 +82,17 @@ const createNode : (config: Config) => Promise<Libp2p> = async (config: Config) 
             }),
             upnpNAT: uPnPNAT(),
             identify: identify(),
-            relay: circuitRelayServer(),
+            relay: circuitRelayServer({
+                hopTimeout: 30 * 1000,
+                advertise: true,
+                reservations: {
+                    maxReservations: 15,
+                    reservationClearInterval: 300 * 1000,
+                    applyDefaultLimit: true,
+                    defaultDurationLimit: 2 * 60 * 1000,
+                    defaultDataLimit: BigInt(2 << 7),
+                }
+            }),
             pubsub: gossipsub()
         }
     })

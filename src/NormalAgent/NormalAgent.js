@@ -71,17 +71,26 @@ async function subscribeToStream(node, callback) {
 async function initAudioStreamToPeer(peerId, node) {
     // Dial the peer using the audio stream protocol
     const stream = await node.dialProtocol(peerId, DIAL_PROTOCOL, { runOnTransientConnection: true });
+    console.log("dialed peer", peerId.toString());
     // Create a pushable stream where you can push audio data chunks
     const audioDataStream = pushable();
     // Use the pipe utility to send audio data through the stream
-    pipe(audioDataStream, 
+    pipe(audioDataStream, consumeSource, 
     // The stream is already in the correct format, so we can directly pipe it
     stream.sink).catch(err => {
         console.error('Stream error:', err);
         audioDataStream.end(err);
     });
+    audioDataStream.onEmpty().then(() => {
+        console.log('Audio stream ended');
+    });
     // Return the pushable stream so you can push audio data to it later
     return audioDataStream;
+}
+async function* consumeSource(source) {
+    for await (const chunk of source) {
+        yield chunk;
+    }
 }
 function publishChunkToGossip(chunk, node) {
     publishToGossip('audio-stream', chunk, node);
