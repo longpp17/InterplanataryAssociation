@@ -1,7 +1,7 @@
 import {Libp2p} from "libp2p";
 import {RPC} from "@chainsafe/libp2p-gossipsub/message";
 import Message = RPC.Message;
-import {PeerId, NewStreamOptions} from "@libp2p/interface" ;
+import {PeerId} from "@libp2p/interface" ;
 import {Uint8ArrayList} from "uint8arraylist";
 import {pipe} from "it-pipe";
 import { pushable, Pushable } from 'it-pushable';
