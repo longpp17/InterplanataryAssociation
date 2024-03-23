@@ -47,14 +47,12 @@ export async function initAudioStreamToPeer(peerId, dial_protocol, node) {
         console.error('Stream error:', err);
         audioDataStream.end(err);
     });
-    audioDataStream.onEmpty().then(() => {
-        console.log('Audio stream ended');
-    });
     console.log("audioStream Created");
     // Return the pushable stream so you can push audio data to it later
     return audioDataStream;
 }
 export async function* consumeSource(source) {
+    // for test
     for await (const chunk of source) {
         console.log("chunk", chunk);
         yield chunk;
@@ -71,6 +69,15 @@ export function getAudioStreamFromGossip(node, callback) {
     else {
         console.log("failed to subscribe to audio stream, client node is null");
     }
+}
+export async function setupStreamWithPeers(node, peerid, dial_protocol) {
+    const peersToConnect = node.getPeers().filter((peer) => peer.toString() === peerid);
+    var pushableStreams = [];
+    for (const peer of peersToConnect) {
+        const pushable = await initAudioStreamToPeer(peer, dial_protocol, node);
+        pushableStreams.push(pushable);
+    }
+    return pushableStreams;
 }
 let retryOperation;
 retryOperation = async (operation, maxAttempts = 5, delay = 1000) => {

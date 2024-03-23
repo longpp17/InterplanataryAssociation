@@ -2,7 +2,7 @@ import { setupLibp2p } from './NormalNode.js';
 import { Server } from "socket.io";
 import { createServer } from "http";
 // @ts-ignore
-import { subscribeToStream, initAudioStreamToPeer } from "./Libp2pIO.js";
+import { subscribeToStream, setupStreamWithPeers } from "./Libp2pIO.js";
 // Creating a libp2p node with:
 //   transport: websockets + tcp
 //   stream-muxing: mplex
@@ -35,7 +35,7 @@ function createAudioIOServer() {
     return io;
 }
 const DIAL_PROTOCOL = '/audio-stream/1.0.0';
-const PUSHABLE_AUDIO_STREAMS = [];
+var PUSHABLE_AUDIO_STREAMS = [];
 const main = async () => {
     const ioServer = createAudioIOServer();
     var clientNode = null;
@@ -82,11 +82,7 @@ const main = async () => {
         socket.on("stream-to-peer", async (peerId) => {
             if (clientNode != null) {
                 // setup peer to stream
-                const peersToConnect = clientNode.getPeers().filter((peer) => peer.toString() === peerId);
-                for (let peer in peersToConnect) {
-                    const pushable = await initAudioStreamToPeer(peersToConnect[peer], DIAL_PROTOCOL, clientNode);
-                    PUSHABLE_AUDIO_STREAMS.push(pushable);
-                }
+                PUSHABLE_AUDIO_STREAMS = await setupStreamWithPeers(clientNode, peerId, DIAL_PROTOCOL);
                 // const audioStream = await initAudioStreamToPeer(peer, clientNode);
                 // console.log("stream-to-peer", peerId);
                 // socket.emit("audio-stream", audioStream);
