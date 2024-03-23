@@ -6,7 +6,7 @@ import { createServer } from "http";
 import { pushable, Pushable } from 'it-pushable';
 import { Buffer } from 'buffer';
 // @ts-ignore
-import { subscribeToStream, initAudioStreamToPeer } from "./Libp2pIO.js";
+import { subscribeToStream, initAudioStreamToPeer, setupStreamWithPeers } from "./Libp2pIO.js";
 
 
 // Creating a libp2p node with:
@@ -48,7 +48,7 @@ function createAudioIOServer(): Server {
 
 
 const DIAL_PROTOCOL = '/audio-stream/1.0.0';
-const PUSHABLE_AUDIO_STREAMS : Pushable<Uint8Array>[] = [];
+var PUSHABLE_AUDIO_STREAMS : Pushable<Uint8Array>[] = [];
 const main = async () => {
     const ioServer = createAudioIOServer();
     var clientNode : Libp2p | null = null;
@@ -104,11 +104,7 @@ const main = async () => {
         socket.on("stream-to-peer", async (peerId: string) => {
             if (clientNode != null) {
                 // setup peer to stream
-                const peersToConnect =  clientNode.getPeers().filter((peer) => peer.toString() === peerId)
-                for (let peer in peersToConnect){
-                    const pushable = await initAudioStreamToPeer(peersToConnect[peer], DIAL_PROTOCOL, clientNode);
-                    PUSHABLE_AUDIO_STREAMS.push(pushable);
-                }
+               PUSHABLE_AUDIO_STREAMS = await setupStreamWithPeers(clientNode, peerId, DIAL_PROTOCOL);
 
                 // const audioStream = await initAudioStreamToPeer(peer, clientNode);
                 // console.log("stream-to-peer", peerId);

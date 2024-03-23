@@ -108,7 +108,15 @@ export function getAudioStreamFromGossip(node: Libp2p<any> | null, callback: (ms
     }
 }
 
-
+export async function setupStreamWithPeers(node: Libp2p<any>, peerid: string, dial_protocol: string) {
+    const peersToConnect = node.getPeers().filter((peer) => peer.toString() === peerid)
+    var pushableStreams = [];
+    for (const peer of peersToConnect) {
+        const pushable = await initAudioStreamToPeer(peer, dial_protocol, node);
+        pushableStreams.push(pushable);
+    }
+    return pushableStreams;
+}
 
 let retryOperation: (operation: () => any, maxAttempts?: number, delay?: number) => Promise<any>;
 retryOperation = async (operation: () => any, maxAttempts = 5, delay = 1000) => {
