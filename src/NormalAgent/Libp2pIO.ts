@@ -18,9 +18,6 @@ import pull from "pull-stream";
 import {map} from "rxjs";
 import {handleIncomingStream} from "@libp2p/webrtc/dist/src/private-to-private/signaling-stream-handler";
 
-
-
-
 export function publishToGossip(topic: String, data: any, node: Libp2p<any>){
     node.services.pubsub.publish(topic, data)
         .catch((error: any) => { // Catching the error from the asynchronous operation
@@ -81,15 +78,14 @@ export async function initAudioStreamToPeer(peerId: PeerId, dial_protocol: strin
         audioDataStream.end(err);
     });
 
-    audioDataStream.onEmpty().then(() => {
-        console.log('Audio stream ended');
-    })
+
     console.log("audioStream Created")
     // Return the pushable stream so you can push audio data to it later
     return audioDataStream;
 }
 
 export async function* consumeSource(source: any ) {
+    // for test
     for await (const chunk of source) {
         console.log("chunk", chunk)
         yield chunk;
