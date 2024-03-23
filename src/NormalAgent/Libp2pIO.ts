@@ -1,22 +1,12 @@
-import {setupLibp2p} from './NormalNode.js';
-import {SocketPeerInfo} from "./SocketIOInterface.js";
 import {Libp2p} from "libp2p";
 import {RPC} from "@chainsafe/libp2p-gossipsub/message";
 import Message = RPC.Message;
-import { Server } from "socket.io";
-import { createServer } from "http";
 import {PeerId, NewStreamOptions} from "@libp2p/interface" ;
-import PeerInfo = RPC.PeerInfo;
-import {Multiaddr} from "@multiformats/multiaddr";
 import {Uint8ArrayList} from "uint8arraylist";
 import {pipe} from "it-pipe";
 import { pushable, Pushable } from 'it-pushable';
-import { Buffer } from 'buffer';
 // @ts-ignore
-import pull from "pull-stream";
 
-import {map} from "rxjs";
-import {handleIncomingStream} from "@libp2p/webrtc/dist/src/private-to-private/signaling-stream-handler";
 
 export function publishToGossip(topic: String, data: any, node: Libp2p<any>){
     node.services.pubsub.publish(topic, data)
@@ -60,12 +50,13 @@ export async function subscribeToStream(node: Libp2p<any>,dial_protocol: string,
 
 // Function to initialize a streaming connection to a specific peer
 // and return a pushable stream that you can use to send audio data continuously
-export async function initAudioStreamToPeer(peerId: PeerId, dial_protocol: string, node: Libp2p<any>) {
+export async function initAudioStreamToPeer(peerId: PeerId, dial_protocol: string, node: Libp2p<any>): Promise<Pushable<Uint8Array>> {
+
     // Dial the peer using the audio stream protocol
     const  stream  = await node.dialProtocol(peerId, dial_protocol, {runOnTransientConnection: true});
     console.log("dialed peer", peerId.toString())
     // Create a pushable stream where you can push audio data chunks
-    const audioDataStream = pushable();
+    const audioDataStream: Pushable<Uint8Array> = pushable();
 
     // Use the pipe utility to send audio data through the stream
     pipe(
@@ -79,7 +70,7 @@ export async function initAudioStreamToPeer(peerId: PeerId, dial_protocol: strin
     });
 
 
-    console.log("audioStream Created")
+
     // Return the pushable stream so you can push audio data to it later
     return audioDataStream;
 }
@@ -91,7 +82,6 @@ export async function* consumeSource(source: any ) {
         yield chunk;
     }
 }
-
 
 
 export function publishChunkToGossip(chunk: any,  node: Libp2p<any>){
@@ -108,14 +98,14 @@ export function getAudioStreamFromGossip(node: Libp2p<any> | null, callback: (ms
     }
 }
 
-export async function setupStreamWithPeers(node: Libp2p<any>, peerid: string, dial_protocol: string) {
-    const peersToConnect = node.getPeers().filter((peer) => peer.toString() === peerid)
-    var pushableStreams = [];
-    for (const peer of peersToConnect) {
-        const pushable = await initAudioStreamToPeer(peer, dial_protocol, node);
-        pushableStreams.push(pushable);
-    }
-    return pushableStreams;
+export async function setupStreamWithPeers(node: Libp2p<any>, peerid: string, dial_protocol: string ): Promise<Pushable<Uint8Array>[]>{
+    const promises: Promise<Pushable<Uint8Array>>[] = node.getPeers()
+        .filter((peer) => peer.toString() === peerid)
+        .map(async peerid => {
+            return await initAudioStreamToPeer(peerid, dial_protocol, node)
+        });
+
+    return await Promise.all(promises);
 }
 
 let retryOperation: (operation: () => any, maxAttempts?: number, delay?: number) => Promise<any>;
