@@ -13,6 +13,7 @@ import { tcp } from "@libp2p/tcp";
 import { kadDHT, removePrivateAddressesMapper } from "@libp2p/kad-dht";
 import { webSockets } from "@libp2p/websockets";
 import { gossipsub } from "@chainsafe/libp2p-gossipsub";
+import { mdns } from "@libp2p/mdns";
 export async function setupLibp2p(bootstarps = []) {
     const libp2p = await createLibp2p({
         addresses: {
@@ -44,7 +45,8 @@ export async function setupLibp2p(bootstarps = []) {
         peerDiscovery: [
             bootstrap({
                 list: bootstarps
-            })
+            }),
+            mdns()
         ],
     });
     libp2p.addEventListener('peer:discovery', (evt) => {
