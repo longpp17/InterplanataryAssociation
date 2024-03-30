@@ -1,16 +1,17 @@
 import { setupLibp2p } from './NormalNode.js';
 import { Buffer } from 'buffer';
 // @ts-ignore
-import { setupStreamWithPeers } from "./Libp2pIO.js";
+import { subscribeToStream, setupStreamWithPeers } from "./Libp2pIO.js";
 import * as readline from "readline";
 const DIAL_PROTOCOL = '/audio-stream/1.0.0';
 var PUSHABLE_AUDIO_STREAMS = [];
+// "/ip4/136.244.110.156/tcp/10000/ws/p2p/12D3KooWE9PhZyetFyR1UbWK45TR6UVNVH9VgU6MAjJ2bDdxeumU",
 const main = async () => {
     var clientNode = await setupLibp2p(["/ip4/136.244.110.156/tcp/10000/ws/p2p/12D3KooWE9PhZyetFyR1UbWK45TR6UVNVH9VgU6MAjJ2bDdxeumU"]); // to insert
     console.log("Multiaddrs: ", clientNode.getMultiaddrs().map((addr) => addr.toString()));
-    await subscribeToStream(clientNode, DIAL_PROTOCOL, (msg: any) => {
-        console.log("recv-audio-buffer", msg)
-    })
+    await subscribeToStream(clientNode, DIAL_PROTOCOL, (msg) => {
+        console.log("recv-audio-buffer", msg);
+    });
     const r1 = readline.createInterface({ input: process.stdin, output: process.stdout });
     recursiveAsyncReadLine(r1, clientNode);
 };
@@ -22,6 +23,13 @@ function recursiveAsyncReadLine(r1, clientNode) {
         }
         else if (answers[0] === 'dial') {
             PUSHABLE_AUDIO_STREAMS = await setupStreamWithPeers(clientNode, answers[1], DIAL_PROTOCOL);
+            if (PUSHABLE_AUDIO_STREAMS.length > 0) {
+                console.log("Successfully dialed peer");
+                console.log("PUSHABLE_AUDIO_STREAMS", PUSHABLE_AUDIO_STREAMS);
+            }
+            else {
+                console.log("Failed to dial peer");
+            }
         }
         else if (answers[0] === 'push') {
             PUSHABLE_AUDIO_STREAMS.forEach((pushable) => {

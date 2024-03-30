@@ -44,7 +44,12 @@ export async function subscribeToStream(node: Libp2p<any>,dial_protocol: string,
                 }
             }
         );
-    });
+    },
+        {
+            // to fix later
+            runOnTransientConnection: true
+        }
+        );
 }
 
 
