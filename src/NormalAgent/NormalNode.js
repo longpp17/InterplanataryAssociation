@@ -47,7 +47,7 @@ export async function setupLibp2p(bootstarps = []) {
             bootstrap({
                 list: bootstarps
             }),
-            // mdns()
+            mdns()
         ],
     });
     libp2p.addEventListener('peer:discovery', (evt) => {

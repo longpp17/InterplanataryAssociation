@@ -31,6 +31,9 @@ export async function subscribeToStream(node, dial_protocol, callback) {
                 callback(chunk);
             }
         });
+    }, {
+        // to fix later
+        runOnTransientConnection: true
     });
 }
 // Function to initialize a streaming connection to a specific peer
