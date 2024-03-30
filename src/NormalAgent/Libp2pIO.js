@@ -1,5 +1,6 @@
 import { pipe } from "it-pipe";
 import { pushable } from 'it-pushable';
+// @ts-ignore
 export function publishToGossip(topic, data, node) {
     node.services.pubsub.publish(topic, data)
         .catch((error) => {
@@ -47,7 +48,6 @@ export async function initAudioStreamToPeer(peerId, dial_protocol, node) {
         console.error('Stream error:', err);
         audioDataStream.end(err);
     });
-    console.log("audioStream Created");
     // Return the pushable stream so you can push audio data to it later
     return audioDataStream;
 }
@@ -71,13 +71,12 @@ export function getAudioStreamFromGossip(node, callback) {
     }
 }
 export async function setupStreamWithPeers(node, peerid, dial_protocol) {
-    const peersToConnect = node.getPeers().filter((peer) => peer.toString() === peerid);
-    var pushableStreams = [];
-    for (const peer of peersToConnect) {
-        const pushable = await initAudioStreamToPeer(peer, dial_protocol, node);
-        pushableStreams.push(pushable);
-    }
-    return pushableStreams;
+    const promises = node.getPeers()
+        .filter((peer) => peer.toString() === peerid)
+        .map(async (peerid) => {
+        return await initAudioStreamToPeer(peerid, dial_protocol, node);
+    });
+    return await Promise.all(promises);
 }
 let retryOperation;
 retryOperation = async (operation, maxAttempts = 5, delay = 1000) => {

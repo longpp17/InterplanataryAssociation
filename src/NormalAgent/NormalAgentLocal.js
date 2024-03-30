@@ -1,16 +1,16 @@
 import { setupLibp2p } from './NormalNode.js';
 import { Buffer } from 'buffer';
 // @ts-ignore
-import { subscribeToStream, setupStreamWithPeers } from "./Libp2pIO.js";
+import { setupStreamWithPeers } from "./Libp2pIO.js";
 import * as readline from "readline";
 const DIAL_PROTOCOL = '/audio-stream/1.0.0';
 var PUSHABLE_AUDIO_STREAMS = [];
 const main = async () => {
-    var clientNode = await setupLibp2p(["/ip4/192.168.0.4/tcp/10000/ws/p2p/12D3KooWRRukZUFFjDKA2qqYPcZjXtjBLegqjFm4ZCuxXnPUtbip"]); // to insert
+    var clientNode = await setupLibp2p(["/ip4/136.244.110.156/tcp/10000/ws/p2p/12D3KooWE9PhZyetFyR1UbWK45TR6UVNVH9VgU6MAjJ2bDdxeumU"]); // to insert
     console.log("Multiaddrs: ", clientNode.getMultiaddrs().map((addr) => addr.toString()));
-    await subscribeToStream(clientNode, DIAL_PROTOCOL, (msg) => {
-        console.log("recv-audio-buffer", msg);
-    });
+    await subscribeToStream(clientNode, DIAL_PROTOCOL, (msg: any) => {
+        console.log("recv-audio-buffer", msg)
+    })
     const r1 = readline.createInterface({ input: process.stdin, output: process.stdout });
     recursiveAsyncReadLine(r1, clientNode);
 };

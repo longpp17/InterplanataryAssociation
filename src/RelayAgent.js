@@ -71,7 +71,7 @@ const createNode = async (config) => {
                     reservationClearInterval: 300 * 1000,
                     applyDefaultLimit: true,
                     defaultDurationLimit: 2 * 60 * 1000,
-                    defaultDataLimit: BigInt(2 << 7),
+                    defaultDataLimit: BigInt(1e9),
                 }
             }),
             pubsub: gossipsub()

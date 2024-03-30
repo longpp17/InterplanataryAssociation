@@ -4,16 +4,14 @@ import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
 import { webSockets } from '@libp2p/websockets'
 import { createLibp2p, Libp2p } from 'libp2p'
-import { webRTC } from "@libp2p/webrtc";
 import { tcp } from "@libp2p/tcp";
 import { uPnPNAT } from '@libp2p/upnp-nat';
-import { kadDHT, removePrivateAddressesMapper} from "@libp2p/kad-dht";
+import { kadDHT} from "@libp2p/kad-dht";
 import {createEd25519PeerId, createFromProtobuf, exportToProtobuf} from "@libp2p/peer-id-factory";
 import {webRTCDirect} from "@libp2p/webrtc";
 import { gossipsub } from "@chainsafe/libp2p-gossipsub";
 
 import * as fs from 'fs'
-import {Libp2pNode} from "libp2p/libp2p";
 import {Multiaddr} from "@multiformats/multiaddr";
 
 
@@ -83,16 +81,17 @@ const createNode : (config: Config) => Promise<Libp2p> = async (config: Config) 
             upnpNAT: uPnPNAT(),
             identify: identify(),
             relay: circuitRelayServer({
-                hopTimeout: 30 * 1000,
-                advertise: true,
-                reservations: {
-                    maxReservations: 15,
-                    reservationClearInterval: 300 * 1000,
-                    applyDefaultLimit: true,
-                    defaultDurationLimit: 2 * 60 * 1000,
-                    defaultDataLimit: BigInt(2 << 7),
+                    hopTimeout: 30 * 1000,
+                    advertise: true,
+                    reservations: {
+                        maxReservations: 15,
+                        reservationClearInterval: 300 * 1000,
+                        applyDefaultLimit: true,
+                        defaultDurationLimit: 2 * 60 * 1000,
+                        defaultDataLimit: BigInt(1e9),
+                    }
                 }
-            }),
+            ),
             pubsub: gossipsub()
         }
     })

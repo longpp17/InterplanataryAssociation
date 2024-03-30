@@ -17,14 +17,14 @@ import { tcp } from "@libp2p/tcp";
 import { kadDHT, removePrivateAddressesMapper} from "@libp2p/kad-dht";
 import {webSockets} from "@libp2p/websockets";
 import { gossipsub } from "@chainsafe/libp2p-gossipsub";
-import {mdns} from "@libp2p/mdns";
 
 
 export async function setupLibp2p(bootstarps: string[] = []) {
     const libp2p = await createLibp2p({
         addresses: {
             listen: [
-                '/ip4/0.0.0.0/tcp/0'
+                '/ip4/0.0.0.0/tcp/0',
+                "/ip4/0.0.0.0/tcp/0/ws"
             ]
         },
         transports: [
@@ -53,7 +53,7 @@ export async function setupLibp2p(bootstarps: string[] = []) {
             bootstrap({
                 list: bootstarps
             }),
-            mdns()
+            // mdns()
         ],
     });
 
