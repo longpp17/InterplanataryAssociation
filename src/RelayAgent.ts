@@ -86,7 +86,7 @@ const createNode : (config: Config) => Promise<Libp2p> = async (config: Config) 
                     reservations: {
                         maxReservations: 15,
                         reservationClearInterval: 300 * 1000,
-                        applyDefaultLimit: true,
+                        applyDefaultLimit: false,
                         defaultDurationLimit: 2 * 60 * 1000,
                         defaultDataLimit: BigInt(1e9),
                     }

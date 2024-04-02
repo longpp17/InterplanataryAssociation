@@ -33,6 +33,7 @@ export async function setupLibp2p(bootstarps = []) {
         ],
         connectionEncryption: [noise()],
         streamMuxers: [yamux()],
+        // yamux server mode and client mode need to setup
         services: {
             upnpNAT: uPnPNAT(),
             identify: identify(),
