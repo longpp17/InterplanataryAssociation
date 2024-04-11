@@ -69,7 +69,7 @@ const createNode = async (config) => {
                 reservations: {
                     maxReservations: 15,
                     reservationClearInterval: 300 * 1000,
-                    applyDefaultLimit: false, // maybe it should be fix in the future
+                    applyDefaultLimit: false,
                     defaultDurationLimit: 2 * 60 * 1000,
                     defaultDataLimit: BigInt(1e9),
                 }

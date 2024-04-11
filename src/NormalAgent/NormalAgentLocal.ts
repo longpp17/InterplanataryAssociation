@@ -26,7 +26,7 @@ function recursiveAsyncReadLine(r1: readline.Interface, clientNode: Libp2p<any>)
         if (answers[0] === 'exit') { // Define a base case for recursion termination
             return r1.close(); // Close the readline interface and exit the function
         } else if (answers[0] === 'dial') {
-           PUSHABLE_AUDIO_STREAMS = await setupStreamWithPeers(clientNode, answers[1], DIAL_PROTOCOL);
+           PUSHABLE_AUDIO_STREAMS = await setupStreamWithPeers(clientNode, [answers[1]], DIAL_PROTOCOL);
            if (PUSHABLE_AUDIO_STREAMS.length > 0){
                console.log("Successfully dialed peer")
                console.log("PUSHABLE_AUDIO_STREAMS", PUSHABLE_AUDIO_STREAMS)

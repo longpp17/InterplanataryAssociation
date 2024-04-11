@@ -73,9 +73,18 @@ export function getAudioStreamFromGossip(node, callback) {
         console.log("failed to subscribe to audio stream, client node is null");
     }
 }
-export async function setupStreamWithPeers(node, peerid, dial_protocol) {
-    const promises = node.getPeers()
-        .filter((peer) => peer.toString() === peerid)
+export async function setupStreamWithPeers(node, peerids, dial_protocol) {
+    // this is not the best performaning way to do it
+    const node_peers = node.getPeers();
+    const promises = peerids
+        .map(peerid => {
+        const foundPeer = node_peers.find(peer => peer.toString() === peerid);
+        if (!foundPeer) {
+            console.log(`PeerId not found: ${peerid}`);
+        }
+        return foundPeer;
+    })
+        .filter((peerid) => peerid !== undefined)
         .map(async (peerid) => {
         return await initAudioStreamToPeer(peerid, dial_protocol, node);
     });

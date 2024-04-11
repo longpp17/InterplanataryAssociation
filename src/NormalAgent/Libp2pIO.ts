@@ -103,12 +103,21 @@ export function getAudioStreamFromGossip(node: Libp2p<any> | null, callback: (ms
     }
 }
 
-export async function setupStreamWithPeers(node: Libp2p<any>, peerid: string, dial_protocol: string ): Promise<Pushable<Uint8Array>[]>{
-    const promises: Promise<Pushable<Uint8Array>>[] = node.getPeers()
-        .filter((peer) => peer.toString() === peerid)
-        .map(async peerid => {
-            return await initAudioStreamToPeer(peerid, dial_protocol, node)
-        });
+export async function setupStreamWithPeers(node: Libp2p<any>, peerids: string[], dial_protocol: string ): Promise<Pushable<Uint8Array>[]>{
+    // this is not the best performaning way to do it
+    const node_peers = node.getPeers();
+    const promises: Promise<Pushable<Uint8Array>>[] = peerids
+                .map(peerid => {
+                    const foundPeer = node_peers.find(peer => peer.toString() === peerid);
+                    if (!foundPeer) {
+                        console.log(`PeerId not found: ${peerid}`);
+                    }
+                    return foundPeer;
+                })
+                .filter((peerid): peerid is PeerId => peerid !== undefined)
+                .map(async peerid => {
+                    return await initAudioStreamToPeer(peerid, dial_protocol, node)
+                });
 
     return await Promise.all(promises);
 }

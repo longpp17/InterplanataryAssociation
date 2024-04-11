@@ -72,13 +72,7 @@ const main = async () => {
                 pushable.push(buffer);
             })
 
-            // publish to gossipsub
-            // if (clientNode != null) {
-            //     publishChunkToGossip(buffer, clientNode);
-            // }
-            // else{
-            //     console.log("failed to publish chunk, client node is null")
-            // }
+          
         })
 
         socket.on("get-peers", async () => {
@@ -101,14 +95,11 @@ const main = async () => {
             }
         })
 
-        socket.on("stream-to-peer", async (peerId: string) => {
+        socket.on("stream-to-peers", async (peerIds: string[]) => {
             if (clientNode != null) {
                 // setup peer to stream
-               PUSHABLE_AUDIO_STREAMS = await setupStreamWithPeers(clientNode, peerId, DIAL_PROTOCOL);
-
-                // const audioStream = await initAudioStreamToPeer(peer, clientNode);
-                // console.log("stream-to-peer", peerId);
-                // socket.emit("audio-stream", audioStream);
+                PUSHABLE_AUDIO_STREAMS = []
+                PUSHABLE_AUDIO_STREAMS = await setupStreamWithPeers(clientNode, peerIds, DIAL_PROTOCOL);
             }
             else{
                 console.log("failed to stream to peer, client node is null")
