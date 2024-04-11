@@ -82,6 +82,12 @@ const main = async () => {
                 console.log("failed to stream to peer, client node is null");
             }
         });
+        socket.on("stop_stream_to_peers", () => {
+            PUSHABLE_AUDIO_STREAMS.forEach((pushable) => {
+                pushable.end();
+            });
+            PUSHABLE_AUDIO_STREAMS = [];
+        });
     });
     const cleanupAndExit = () => {
         console.log('Cleaning up before exit...');

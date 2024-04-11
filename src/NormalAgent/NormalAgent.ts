@@ -106,6 +106,13 @@ const main = async () => {
             }
         })
 
+        socket.on("stop_stream_to_peers", () => {
+            PUSHABLE_AUDIO_STREAMS.forEach((pushable) => {
+                pushable.end();
+            })
+            PUSHABLE_AUDIO_STREAMS = [];
+        })
+
 
     })
 
