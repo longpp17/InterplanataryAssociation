@@ -5,6 +5,7 @@ import {PeerId} from "@libp2p/interface" ;
 import {Uint8ArrayList} from "uint8arraylist";
 import {pipe} from "it-pipe";
 import { pushable, Pushable } from 'it-pushable';
+import * as lp from "it-length-prefixed"
 // @ts-ignore
 
 
@@ -37,6 +38,7 @@ export async function subscribeToStream(node: Libp2p<any>,dial_protocol: string,
     await node.handle(dial_protocol, async ({stream}) => {
         await pipe(
             stream.source,
+            (source) => lp.decode(source),
             async (source: any) => {
                 for await (const chunk of source) {
                     // Emit the audio chunk to all connected Socket.IO clients
@@ -67,6 +69,7 @@ export async function initAudioStreamToPeer(peerId: PeerId, dial_protocol: strin
     pipe(
         audioDataStream,
         consumeSource,
+        (source) => lp.encode(source),
         // The stream is already in the correct format, so we can directly pipe it
         stream.sink
     ).catch(err => {

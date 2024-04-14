@@ -1,5 +1,6 @@
 import { pipe } from "it-pipe";
 import { pushable } from 'it-pushable';
+import * as lp from "it-length-prefixed";
 // @ts-ignore
 export function publishToGossip(topic, data, node) {
     node.services.pubsub.publish(topic, data)
@@ -25,7 +26,7 @@ export function subscribeToGossipSub(topic, node, callback) {
 }
 export async function subscribeToStream(node, dial_protocol, callback) {
     await node.handle(dial_protocol, async ({ stream }) => {
-        await pipe(stream.source, async (source) => {
+        await pipe(stream.source, (source) => lp.decode(source), async (source) => {
             for await (const chunk of source) {
                 // Emit the audio chunk to all connected Socket.IO clients
                 callback(chunk);
@@ -45,7 +46,7 @@ export async function initAudioStreamToPeer(peerId, dial_protocol, node) {
     // Create a pushable stream where you can push audio data chunks
     const audioDataStream = pushable();
     // Use the pipe utility to send audio data through the stream
-    pipe(audioDataStream, consumeSource, 
+    pipe(audioDataStream, consumeSource, (source) => lp.encode(source), 
     // The stream is already in the correct format, so we can directly pipe it
     stream.sink).catch(err => {
         console.error('Stream error:', err);
